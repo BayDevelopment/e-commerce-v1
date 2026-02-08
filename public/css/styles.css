@@ -1,0 +1,1156 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+/* =========================
+   Sticky Footer (ALL PAGES)
+   ========================= */
+html,
+body {
+    height: 100%;
+}
+
+body.td-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* dorong footer ke bawah */
+body.td-layout > main {
+    flex: 1;
+    display: block;
+}
+
+/* footer stay bottom */
+body.td-layout > footer {
+    margin-top: auto;
+}
+
+/* ===== Trendora Modern Landing (Bootstrap 5) ===== */
+
+:root {
+    --td-primary: #6f42c1;
+    --td-primary-2: #4c1d95;
+    --td-dark: #0b1220;
+    --td-muted: #94a3b8;
+}
+
+body {
+    background: #0b1220;
+    font-family: "Poppins", sans-serif;
+}
+
+/* HERO */
+.td-hero {
+    position: relative;
+    background:
+        radial-gradient(
+            1200px 600px at 10% 10%,
+            rgba(111, 66, 193, 0.35),
+            transparent 60%
+        ),
+        radial-gradient(
+            900px 500px at 90% 20%,
+            rgba(59, 130, 246, 0.25),
+            transparent 55%
+        ),
+        linear-gradient(180deg, #0b1220 0%, #0b1220 100%);
+    color: #fff;
+    overflow: hidden;
+}
+
+.td-hero::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+        135deg,
+        rgba(111, 66, 193, 0.28),
+        rgba(59, 130, 246, 0.18),
+        rgba(16, 185, 129, 0.12)
+    );
+    filter: blur(40px);
+    opacity: 0.9;
+    z-index: 0;
+}
+
+.td-hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* hero badge (inline) */
+.td-badge {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+}
+
+/* Section base */
+.td-section {
+    background: #0b1220;
+    color: #e5e7eb;
+}
+
+.td-section .td-subtitle {
+    color: var(--td-muted);
+}
+
+/* Cards modern */
+.td-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+    height: 100%;
+}
+
+.td-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(111, 66, 193, 0.45);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.td-icon {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: linear-gradient(
+        135deg,
+        rgba(111, 66, 193, 0.35),
+        rgba(59, 130, 246, 0.22)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 1.4rem;
+}
+
+/* Product cards (legacy) */
+.td-product-img {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    filter: saturate(1.05);
+}
+
+.td-chip {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+}
+
+/* CTA */
+.td-cta {
+    background: linear-gradient(
+        135deg,
+        rgba(111, 66, 193, 0.35),
+        rgba(59, 130, 246, 0.22)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 22px;
+    overflow: hidden;
+    position: relative;
+}
+
+.td-cta::after {
+    content: "";
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    right: -180px;
+    top: -220px;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.14),
+        transparent 60%
+    );
+    filter: blur(10px);
+}
+
+.td-cta .content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Form */
+.form-control,
+.form-select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e5e7eb;
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+}
+
+.form-control:focus {
+    border-color: rgba(111, 66, 193, 0.6);
+    box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+/* Buttons */
+.btn-td {
+    background: linear-gradient(135deg, var(--td-primary), #3b82f6);
+    border: none;
+    border-radius: 14px;
+    padding: 0.85rem 1.1rem;
+    box-shadow: 0 10px 25px rgba(111, 66, 193, 0.22);
+}
+
+.btn-td:hover {
+    filter: brightness(1.05);
+}
+
+.btn-outline-td {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.btn-outline-td:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Spacing fix for fixed navbar (kalau navbar kamu fixed-top) */
+.td-top-space {
+    padding-top: 88px;
+}
+
+/* LOGIN BTN */
+.login-btn {
+    padding: 8px 22px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #fff;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #4338ca, #4f46e5);
+    box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4);
+    transform: translateY(-1px);
+}
+
+/* NAV UNDERLINE */
+.nav-underline {
+    position: relative;
+    color: #6c757d;
+    padding-bottom: 6px;
+    transition: color 0.25s ease;
+}
+
+.nav-underline:hover,
+.nav-underline.active {
+    color: #6f42c1;
+}
+
+.nav-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 3px;
+    background-color: #6f42c1;
+    transition: width 0.3s ease;
+}
+
+.nav-underline:hover::after {
+    width: 100%;
+}
+
+.nav-underline.active::after {
+    width: 100%;
+}
+
+/* =========================
+   PRODUCT CARD (NEW)
+   ========================= */
+.td-product-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.td-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+    border-color: rgba(111, 66, 193, 0.5);
+}
+
+/* IMAGE WRAPPER — FIX TINGGI */
+.td-product-thumb {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    background: #111;
+}
+
+.td-product-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.td-product-card:hover .td-product-thumb img {
+    transform: scale(1.05);
+}
+
+/* product badge override (biar absolute di card) */
+.td-product-thumb .td-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 999px;
+    background: rgba(111, 66, 193, 0.18);
+    border: 1px solid rgba(111, 66, 193, 0.45);
+    color: #d9c7ff;
+    backdrop-filter: blur(6px);
+}
+
+.td-discount {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 5px 9px;
+    font-size: 12px;
+    border-radius: 10px;
+    background: rgba(220, 53, 69, 0.15);
+    border: 1px solid rgba(220, 53, 69, 0.45);
+    color: #ffd0d6;
+}
+
+/* BODY */
+.td-product-body {
+    padding: 16px;
+}
+
+/* TITLE */
+.td-product-title {
+    display: block;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.td-product-title:hover {
+    color: #d9c7ff;
+}
+
+/* META */
+.td-product-meta {
+    margin-bottom: 10px;
+}
+
+.td-rating {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.td-rating i {
+    color: #f5c451;
+}
+
+/* PRICE ROW */
+.td-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.td-price-now {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.td-price-old {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: line-through;
+    margin-left: 6px;
+}
+
+/* CART BUTTON */
+.td-cart-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(111, 66, 193, 0.22);
+    border: 1px solid rgba(111, 66, 193, 0.45);
+    color: #fff;
+    transition: all 0.2s ease;
+}
+
+.td-cart-btn:hover {
+    background: rgba(111, 66, 193, 0.35);
+    transform: translateY(-1px);
+}
+
+/* =========================
+   DETAIL PRODUCT
+   ========================= */
+.td-detail-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 18px;
+}
+
+.td-detail-title {
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    margin-bottom: 10px;
+    font-size: 28px;
+}
+
+.td-detail-meta .td-dot {
+    opacity: 0.6;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.td-detail-price .td-price-now {
+    color: #fff;
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1.1;
+}
+
+.td-detail-price .td-price-old {
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: line-through;
+}
+
+.td-detail-gallery .td-main-img {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.td-detail-gallery .td-main-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.td-thumbs {
+    display: flex;
+    gap: 10px;
+    overflow: auto;
+    padding-bottom: 2px;
+}
+
+.td-thumb-btn {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 14px;
+    padding: 0;
+    width: 86px;
+    height: 70px;
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.td-thumb-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.25s ease;
+}
+
+.td-thumb-btn:hover img {
+    transform: scale(1.05);
+}
+
+.td-stock {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.td-stock.is-out {
+    color: #ff8a8a;
+}
+
+.td-variant-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 8px;
+}
+
+.td-variant-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.td-pill {
+    position: relative;
+    cursor: pointer;
+}
+
+.td-pill input {
+    display: none;
+}
+
+.td-pill span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.02);
+    color: rgba(255, 255, 255, 0.85);
+    transition: all 0.2s ease;
+}
+
+.td-pill:hover span {
+    border-color: rgba(111, 66, 193, 0.5);
+}
+
+.td-pill input:checked + span {
+    background: rgba(111, 66, 193, 0.22);
+    border-color: rgba(111, 66, 193, 0.6);
+    color: #fff;
+}
+
+.td-qty-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.td-qty-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.02);
+    color: #fff;
+}
+
+.td-qty-input {
+    width: 80px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.02);
+    color: #fff;
+    text-align: center;
+}
+
+.td-detail-tabs .td-pilltab {
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.td-detail-tabs .nav-link.active.td-pilltab {
+    background: rgba(111, 66, 193, 0.22);
+    border-color: rgba(111, 66, 193, 0.6);
+    color: #fff;
+}
+
+.td-detail-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 18px;
+}
+
+.td-spec-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.td-spec-key {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.td-spec-val {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.td-review {
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+}
+/* =========================
+   OFFSET DI BAWAH NAVBAR
+   ========================= */
+
+/* tinggi navbar bootstrap default ±56px,
+   kita tambah buffer biar lega */
+.td-page--after-navbar {
+    padding-top: 110px; /* 🔥 KUNCI: di bawah navbar */
+    padding-bottom: 24px;
+}
+
+/* breadcrumb spacing tambahan */
+/* breadcrumb base */
+.td-breadcrumb .breadcrumb {
+    font-size: 14px;
+    align-items: center;
+}
+
+/* link breadcrumb */
+.td-bc-link {
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.td-bc-link:hover {
+    color: #d9c7ff; /* ungu hover */
+}
+
+/* divider (/ atau ›) */
+.breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ACTIVE / CURRENT PAGE */
+.td-bc-active,
+.breadcrumb-item.active {
+    color: #ffffff; /* 🔥 PUTIH */
+    font-weight: 600;
+}
+/* tombol action detail product */
+.td-btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* jarak icon & teks */
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+/* icon di tombol */
+.td-btn-action i {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* hover feel lebih hidup */
+.btn-td.td-btn-action:hover {
+    box-shadow: 0 10px 28px rgba(111, 66, 193, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-outline-td.td-btn-action:hover {
+    border-color: rgba(111, 66, 193, 0.6);
+}
+/* NAVBAR TAMBAHAN */
+/* =========================
+   NAVBAR MODERN KEUNGUAN
+   ========================= */
+.td-navbar {
+    background: linear-gradient(
+        180deg,
+        rgba(76, 29, 149, 0.85),
+        rgba(15, 23, 42, 0.75)
+    );
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 0;
+}
+
+/* brand */
+.td-brand {
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    font-size: 1.2rem;
+}
+.td-brand:hover {
+    color: #e9d5ff;
+}
+
+/* nav link */
+.td-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+}
+
+/* hover & active */
+.td-navbar .nav-link:hover,
+.td-navbar .nav-link.active {
+    color: #fff;
+}
+
+/* underline ungu (reuse punyamu) */
+.td-navbar .nav-underline::after {
+    height: 2px;
+}
+
+/* icon login */
+.td-login-icon {
+    font-size: 1.05rem;
+}
+
+/* navbar toggler */
+.td-toggler {
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;
+}
+.td-toggler:focus {
+    box-shadow: none;
+}
+
+/* mobile menu background */
+@media (max-width: 991px) {
+    .td-navbar .navbar-collapse {
+        background: rgba(15, 23, 42, 0.9);
+        border-radius: 18px;
+        padding: 14px;
+        margin-top: 12px;
+    }
+}
+/* hero buttons */
+.td-btn-hero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+/* hover feel */
+.btn-td.td-btn-hero:hover {
+    box-shadow: 0 12px 30px rgba(111, 66, 193, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-outline-td.td-btn-hero:hover {
+    border-color: rgba(111, 66, 193, 0.6);
+}
+/* contact cards */
+.td-contact-card {
+    transition: all 0.25s ease;
+}
+
+.td-contact-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(111, 66, 193, 0.45);
+}
+
+/* icon bulat */
+.td-contact-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
+    background: linear-gradient(
+        135deg,
+        rgba(111, 66, 193, 0.55),
+        rgba(59, 130, 246, 0.45)
+    );
+}
+
+/* whatsapp khusus */
+.td-contact-icon.td-wa {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+/* input icon */
+.td-input-icon {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.75);
+    border-radius: 14px 0 0 14px;
+}
+
+/* rapihin input group */
+.input-group .form-control {
+    border-left: none;
+}
+.input-group .form-control:focus {
+    border-left: none;
+}
+
+/* label */
+.form-label {
+    color: rgba(255, 255, 255, 0.75);
+}
+/* search bar */
+.td-search {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+}
+.td-search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.6);
+}
+.td-search-input {
+    padding-left: 40px;
+    border-radius: 14px;
+}
+
+/* filterbar */
+.td-filterbar {
+    border-radius: 18px;
+}
+
+/* pagination */
+.td-pagination .page-link {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    margin: 0 4px;
+}
+.td-pagination .page-item.active .page-link {
+    background: rgba(111, 66, 193, 0.22);
+    border-color: rgba(111, 66, 193, 0.6);
+    color: #fff;
+}
+.td-pagination .page-link:hover {
+    border-color: rgba(111, 66, 193, 0.5);
+    color: #fff;
+}
+/* =========================
+   GRID VIEW (default)
+   ========================= */
+.td-view-grid .td-product-item {
+    display: block;
+}
+
+/* =========================
+   LIST VIEW
+   ========================= */
+.td-view-list .row {
+    gap: 16px;
+}
+
+.td-view-list .td-product-item {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.td-view-list .td-product-card {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+}
+
+/* gambar kiri */
+.td-view-list .td-product-thumb {
+    width: 220px;
+    height: 160px;
+    flex-shrink: 0;
+    border-radius: 16px 0 0 16px;
+}
+
+/* body kanan */
+.td-view-list .td-product-body {
+    flex: 1;
+    padding: 16px 16px 16px 0;
+}
+
+/* tombol di list */
+.td-view-list .td-product-body .d-flex.mt-3 {
+    max-width: 320px;
+}
+
+/* badge posisi ulang */
+.td-view-list .td-product-thumb .td-badge,
+.td-view-list .td-product-thumb .td-discount {
+    top: 10px;
+}
+
+/* mobile: list balik ke stack */
+@media (max-width: 576px) {
+    .td-view-list .td-product-card {
+        flex-direction: column;
+    }
+    .td-view-list .td-product-thumb {
+        width: 100%;
+        height: 200px;
+        border-radius: 16px 16px 0 0;
+    }
+    .td-view-list .td-product-body {
+        padding: 16px;
+    }
+}
+
+/* =========================
+   GRID / LIST TOGGLE BUTTON
+   ========================= */
+
+/* default: tetap putih */
+.td-view-btn {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.04);
+    transition: all 0.25s ease;
+}
+
+/* hover (semua tombol) */
+.td-view-btn:hover {
+    border-color: rgba(111, 66, 193, 0.6);
+    background: rgba(111, 66, 193, 0.12);
+    color: #fff;
+}
+
+/* ACTIVE STATE */
+.td-view-btn.active {
+    background: linear-gradient(
+        135deg,
+        rgba(111, 66, 193, 0.45),
+        rgba(59, 130, 246, 0.35)
+    );
+    border-color: rgba(111, 66, 193, 0.9);
+    color: #fff;
+    box-shadow:
+        0 0 0 1px rgba(111, 66, 193, 0.6),
+        0 10px 30px rgba(111, 66, 193, 0.45);
+}
+
+/* icon sedikit lebih tegas saat aktif */
+.td-view-btn.active i {
+    transform: scale(1.05);
+}
+/* =========================
+   FILTER DROPDOWN (DARK)
+   ========================= */
+
+/* label */
+.td-filterbar .form-label,
+.form-label.small {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* select base */
+.td-filterbar .form-select,
+.form-select {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    border-radius: 14px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+
+    /* custom arrow */
+    background-image:
+        linear-gradient(45deg, transparent 50%, #d9c7ff 50%),
+        linear-gradient(135deg, #d9c7ff 50%, transparent 50%);
+    background-position:
+        calc(100% - 20px) 50%,
+        calc(100% - 15px) 50%;
+    background-size:
+        6px 6px,
+        6px 6px;
+    background-repeat: no-repeat;
+}
+
+/* focus */
+.td-filterbar .form-select:focus,
+.form-select:focus {
+    background-color: rgba(255, 255, 255, 0.07);
+    border-color: rgba(111, 66, 193, 0.7);
+    box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.18);
+    color: #fff;
+}
+
+/* dropdown option */
+.form-select option {
+    background: #0b1220;
+    color: #fff;
+}
+
+/* hover feel */
+.td-filterbar .form-select:hover {
+    border-color: rgba(111, 66, 193, 0.6);
+}
+
+/* disabled (kalau nanti dipakai) */
+.form-select:disabled {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.4);
+}
+/* form placeholder */
+/* Placeholder warna secondary / muted */
+.form-control::placeholder {
+    color: var(--td-muted);
+    opacity: 0.7;
+}
+
+/* Support browser lain */
+.form-control::-webkit-input-placeholder {
+    color: var(--td-muted);
+    opacity: 0.7;
+}
+
+.form-control:-ms-input-placeholder {
+    color: var(--td-muted);
+    opacity: 0.7;
+}
+/* =========================
+   VALIDATION ERROR (DARK UI)
+   ========================= */
+.invalid-feedback {
+    color: #fca5a5; /* merah soft */
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.form-control.is-invalid {
+    border-color: rgba(239, 68, 68, 0.6);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.15);
+}
+
+/* =========================
+   USER DROPDOWN (NAVBAR)
+   ========================= */
+
+.td-user-toggle {
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 999px;
+    transition: background 0.25s ease;
+}
+
+.td-user-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* avatar */
+.td-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+    background: linear-gradient(135deg, #6f42c1, #3b82f6);
+    box-shadow: 0 4px 14px rgba(111, 66, 193, 0.45);
+}
+
+.td-user-avatar.sm {
+    width: 34px;
+    height: 34px;
+    font-size: 0.85rem;
+}
+
+/* name */
+.td-user-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* caret */
+.td-user-caret {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* dropdown */
+.td-user-dropdown {
+    min-width: 260px;
+    padding: 10px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+}
+
+/* user mini header */
+.td-user-mini {
+    display: flex;
+    align-items: center;
+}
+
+/* dropdown item */
+.td-user-dropdown .dropdown-item {
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 10px 12px;
+    transition: all 0.2s ease;
+}
+
+.td-user-dropdown .dropdown-item:hover {
+    background: rgba(111, 66, 193, 0.22);
+    color: #fff;
+}
+
+.td-user-dropdown .dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+}

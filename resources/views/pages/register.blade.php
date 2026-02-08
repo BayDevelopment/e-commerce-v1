@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ $title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <!-- CSS KAMU -->
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+</head>
+
+<body class="td-layout">
+
+    <main class="d-flex align-items-center justify-content-center py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-7">
+
+                    <div class="td-card p-4 p-md-5">
+                        <!-- HEADER -->
+                        <div class="text-center mb-4">
+                            <div class="td-icon mx-auto mb-3">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-1">Buat Akun Baru</h4>
+                            <p class="text-muted small mb-0">
+                                Daftar untuk mulai belanja
+                            </p>
+                        </div>
+
+                        <!-- FORM -->
+                        <form method="POST" action="{{ route('register.proses') }}">
+                            @csrf
+
+                            <!-- NAMA -->
+                            <div class="mb-3">
+                                <label class="form-label">Nama Lengkap</label>
+                                <div class="input-group">
+                                    <span class="input-group-text td-input-icon">
+                                        <i class="fa-regular fa-user"></i>
+                                    </span>
+                                    <input type="text" name="name" value="{{ old('name') }}"
+                                        class="form-control @error('name') is-invalid @enderror"
+                                        placeholder="Nama lengkap kamu" required>
+                                </div>
+                                @error('name')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <!-- EMAIL -->
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text td-input-icon">
+                                        <i class="fa-regular fa-envelope"></i>
+                                    </span>
+                                    <input type="email" name="email" value="{{ old('email') }}"
+                                        class="form-control @error('email') is-invalid @enderror"
+                                        placeholder="email@contoh.com" required>
+                                </div>
+                                @error('email')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <!-- PASSWORD -->
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text td-input-icon">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                    <input type="password" name="password"
+                                        class="form-control @error('password') is-invalid @enderror"
+                                        placeholder="Minimal 8 karakter" required>
+                                </div>
+                                @error('password')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <!-- CONFIRM PASSWORD -->
+                            <div class="mb-4">
+                                <label class="form-label">Konfirmasi Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text td-input-icon">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                    <input type="password" name="password_confirmation"
+                                        class="form-control @error('password_confirmation') is-invalid @enderror"
+                                        placeholder="Ulangi password" required>
+                                </div>
+                                @error('password_confirmation')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                            <!-- BUTTON -->
+                            <button type="submit" class="btn btn-td w-100 td-btn-action">
+                                <i class="fa-solid fa-user-check"></i>
+                                Daftar Sekarang
+                            </button>
+                        </form>
+
+                        <!-- FOOTER -->
+                        <div class="text-center mt-4">
+                            <span class="small td-text-gradient" style="color: var(--td-primary);">
+                                Sudah punya akun?
+                            </span>
+                            <a href="{{ route('login') }}" class="ms-1 small text-decoration-none"
+                                style="color:#d9c7ff;">
+                                Login
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
