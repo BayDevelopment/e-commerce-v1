@@ -1154,3 +1154,19 @@ body {
 .td-user-dropdown .dropdown-divider {
     border-color: rgba(255, 255, 255, 0.1);
 }
+/* SWEETALERT TOAST DARK */
+.td-toast {
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: #fff !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+.td-toast .swal2-title {
+    font-size: 14px !important;
+    font-weight: 600;
+}
+
+.td-toast .swal2-icon {
+    margin: 0 8px 0 0 !important;
+}

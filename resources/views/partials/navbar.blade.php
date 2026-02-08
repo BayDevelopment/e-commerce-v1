@@ -20,7 +20,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link nav-underline td-login-icon" href="#" title="Login">
+                    <a class="nav-link nav-underline td-login-icon" href="{{ route('login.proses') }}" title="Login">
                         <i class="fa-regular fa-user"></i>
                     </a>
                 </li>

@@ -40,7 +40,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
         $user->markEmailAsVerified();
     }
 
-    return redirect()->route('dashboard')
+    return redirect()->route('customer/dashboard')
         ->with('success', 'Email berhasil diverifikasi 🎉');
 })->middleware('signed')->name('verification.verify');
 
@@ -52,14 +52,14 @@ Route::post('/email/verification-notification', function (Request $request) {
 
 // cegah jika blom verifikasi akun tidak bisa membeli 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index']);
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/checkout', [CheckoutController::class, 'index']);
+    Route::get('/customer/dashboard', [DashboardController::class, 'index']);
+    Route::get('/customer/orders', [OrderController::class, 'index']);
+    Route::get('/customer/checkout', [CheckoutController::class, 'index']);
 });
 
 // dashboard yang sudah verified
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])
+    Route::get('/customer/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 });

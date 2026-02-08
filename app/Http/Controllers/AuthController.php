@@ -29,13 +29,10 @@ class AuthController extends Controller
             ])->withInput();
         }
 
-        // 🔥 simpan user ke variable
         $user = Auth::user();
 
-        // regenerate session
         $request->session()->regenerate();
 
-        // cek verifikasi email
         if (is_null($user->email_verified_at)) {
             Auth::logout();
 
@@ -44,8 +41,10 @@ class AuthController extends Controller
             ]);
         }
 
-        return redirect()->intended('/dashboard');
+        return redirect()->intended('/customer/dashboard')
+            ->with('success', 'Login berhasil. Selamat datang kembali 👋');
     }
+
 
 
 
