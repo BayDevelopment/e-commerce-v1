@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Models\User;
@@ -62,4 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/customer/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+    Route::get('/customer/profile', [ProductController::class, 'index'])
+        ->name('profile');
+    Route::get('/customer/laporan', [LaporanController::class, 'index'])
+        ->name('laporan');
 });

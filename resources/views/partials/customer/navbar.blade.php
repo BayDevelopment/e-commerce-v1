@@ -18,6 +18,18 @@
                         Dashboard
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-underline {{ $navlink === 'product' ? 'active' : '' }}"
+                        href="{{ url('/product') }}">
+                        Product
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-underline {{ $navlink === 'laporan' ? 'active' : '' }}"
+                        href="{{ url('/laporan') }}">
+                        Laporan
+                    </a>
+                </li>
 
                 <li class="nav-item dropdown">
                     <a class="nav-link d-flex align-items-center gap-2 td-user-toggle" href="#" role="button"
@@ -60,9 +72,9 @@
                         </li>
 
                         <li>
-                            <a class="dropdown-item" href="{{ route('dashboard') }}">
+                            <a class="dropdown-item" href="{{ route('profile') }}">
                                 <i class="fa-regular fa-user me-2"></i>
-                                Dashboard
+                                Profile
                             </a>
                         </li>
 
