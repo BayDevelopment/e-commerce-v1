@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index']);
-Route::get('/produk', [ProductController::class, 'products'])->name('products.index');
+Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
 Route::get('/produk/{slug}', [HomeController::class, 'details'])->name('products.detail');
 
 // login & logout pelanggan
@@ -65,7 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/customer/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
-    Route::get('/customer/product', [AdminProdukController::class, 'ControlProduct'])
+    Route::get('/customer/product', [ProductController::class, 'productsCustomer'])
         ->name('produk');
     Route::get('/customer/profile', [ProfileController::class, 'index'])
         ->name('profile');

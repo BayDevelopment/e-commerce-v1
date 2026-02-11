@@ -46,7 +46,7 @@
                     <button class="btn btn-td w-100">
                         <i class="fa-solid fa-filter"></i>
                     </button>
-                    <a href="{{ route('produk') }}" class="btn btn-outline-light w-100">
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-light w-100">
                         Reset
                     </a>
                 </div>
