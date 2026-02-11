@@ -40,11 +40,6 @@
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                         </div>
 
-                        <!-- NAME -->
-                        <span class="td-user-name d-none d-md-inline">
-                            {{ Auth::user()->name }}
-                        </span>
-
                         <!-- ICON -->
                         <i class="fa-solid fa-chevron-down td-user-caret d-none d-md-inline"></i>
                     </a>
@@ -72,7 +67,7 @@
                         </li>
 
                         <li>
-                            <a class="dropdown-item" href="{{ route('profile') }}">
+                            <a class="dropdown-item" href="{{ route('customer.profile') }}">
                                 <i class="fa-regular fa-user me-2"></i>
                                 Profile
                             </a>

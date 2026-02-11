@@ -58,24 +58,26 @@ class AuthController extends Controller
     }
     public function RegisterProses(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'customer', // 🔥 tambahin ini
         ]);
 
-        // 🔥 KIRIM EMAIL VERIFIKASI (BUILT-IN)
+        // kirim email verifikasi
         $user->sendEmailVerificationNotification();
 
         return redirect()->route('login')
             ->with('success', 'Link verifikasi telah dikirim ke email Anda.');
     }
+
 
     // LOGOUT
     public function logoutProses(Request $request)
