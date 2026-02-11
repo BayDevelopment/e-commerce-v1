@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminProdukController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use App\Models\User;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -41,7 +43,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
         $user->markEmailAsVerified();
     }
 
-    return redirect()->route('customer/dashboard')
+    return redirect()->route('dashboard')
         ->with('success', 'Email berhasil diverifikasi 🎉');
 })->middleware('signed')->name('verification.verify');
 
@@ -63,7 +65,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/customer/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
-    Route::get('/customer/profile', [ProductController::class, 'index'])
+    Route::get('/customer/product', [AdminProdukController::class, 'ControlProduct'])
+        ->name('produk');
+    Route::get('/customer/profile', [ProfileController::class, 'index'])
         ->name('profile');
     Route::get('/customer/laporan', [LaporanController::class, 'index'])
         ->name('laporan');

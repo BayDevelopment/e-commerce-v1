@@ -14,19 +14,19 @@
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                 <li class="nav-item">
                     <a class="nav-link nav-underline {{ $navlink === 'dashboard' ? 'active' : '' }}"
-                        href="{{ url('/dashboard') }}">
+                        href="{{ url('/customer/dashboard') }}">
                         Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link nav-underline {{ $navlink === 'product' ? 'active' : '' }}"
-                        href="{{ url('/product') }}">
+                        href="{{ url('/customer/product') }}">
                         Product
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link nav-underline {{ $navlink === 'laporan' ? 'active' : '' }}"
-                        href="{{ url('/laporan') }}">
+                        href="{{ url('/customer/laporan') }}">
                         Laporan
                     </a>
                 </li>
