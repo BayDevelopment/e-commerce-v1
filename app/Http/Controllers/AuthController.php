@@ -41,7 +41,18 @@ class AuthController extends Controller
             ]);
         }
 
-        return redirect()->intended('/customer/dashboard')
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect Berdasarkan Role
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->role === 'admin') {
+            return redirect('/admin')
+                ->with('success', 'Login berhasil sebagai Admin 👋');
+        }
+
+        return redirect()->route('customer.dashboard')
             ->with('success', 'Login berhasil. Selamat datang kembali 👋');
     }
 

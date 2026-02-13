@@ -142,7 +142,7 @@
                     <!-- OPTIONAL CTA -->
                     @if (!Auth::user()->email_verified_at || !$profileComplete)
                         <div class="mt-4">
-                            <a href="{{ route('dashboard') }}" class="btn btn-outline-td w-100 td-btn-action">
+                            <a href="{{ route('customer.dashboard') }}" class="btn btn-outline-td w-100 td-btn-action">
                                 <i class="fa-solid fa-user-gear"></i>
                                 Lengkapi Akun
                             </a>
@@ -160,7 +160,7 @@
                         <h5 class="fw-bold text-white mb-2">
                             Mulai Belanja 🚀
                         </h5>
-                        <p class="text-muted mb-3">
+                        <p class="text-secondary mb-3">
                             Jelajahi produk terbaik dan promo hari ini
                         </p>
                         <a href="{{ route('products.index') }}" class="btn btn-td w-100 td-btn-action">

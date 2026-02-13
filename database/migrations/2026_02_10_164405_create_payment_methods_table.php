@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payment_methods', function (Blueprint $table) {
-            $table->id('id_payment_methods');
+            $table->id();
             $table->string('name'); // Transfer Bank
             $table->string('bank_name')->nullable(); // BCA, BRI
             $table->string('account_number')->nullable();
