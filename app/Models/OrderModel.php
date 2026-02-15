@@ -11,17 +11,15 @@ class OrderModel extends Model
 
     protected $fillable = [
         'user_id',
+        'payment_method_id',
         'total_price',
-        'payment_method',
-        'bank_name',
-        'bank_account_number',
-        'bank_account_name',
-        'payment_proof',
         'payment_status',
         'status',
     ];
 
-    /* ================= RELATION ================= */
+    protected $casts = [
+        'total_price' => 'integer',
+    ];
 
     public function user()
     {
@@ -30,19 +28,11 @@ class OrderModel extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderModel::class);
+        return $this->hasMany(OrderItemModel::class);
     }
 
-    /* ================= HELPER ================= */
-
-    public function calculateTotal()
+    public function paymentMethod()
     {
-        $total = $this->items->sum(function ($item) {
-            return $item->price * $item->quantity;
-        });
-
-        $this->update([
-            'total_price' => $total,
-        ]);
+        return $this->belongsTo(PayMethodModel::class);
     }
 }

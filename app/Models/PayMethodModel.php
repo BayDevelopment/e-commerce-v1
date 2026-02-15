@@ -17,7 +17,9 @@ class PayMethodModel extends Model
         'is_active',
     ];
 
-    /* ================= RELATION ================= */
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     public function orders()
     {

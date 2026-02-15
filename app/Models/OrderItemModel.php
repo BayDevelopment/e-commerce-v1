@@ -11,24 +11,48 @@ class OrderItemModel extends Model
 
     protected $fillable = [
         'order_id',
-        'product_id',
+        'product_variant_id',
         'quantity',
         'price',
         'subtotal',
         'product_name',
-        'product_sku',
+        'variant_sku',
+        'variant_color',
+        'variant_size',
         'note',
     ];
 
-    /* ================= RELATION ================= */
+    protected $casts = [
+        'price' => 'integer',
+        'subtotal' => 'integer',
+        'quantity' => 'integer',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
 
     public function order()
     {
         return $this->belongsTo(OrderModel::class);
     }
 
-    public function product()
+    public function variant()
     {
-        return $this->belongsTo(ProductModel::class);
+        return $this->belongsTo(ProductVariantModel::class, 'product_variant_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER (Optional)
+    |--------------------------------------------------------------------------
+    */
+
+    // Hitung ulang subtotal otomatis
+    public function calculateSubtotal()
+    {
+        $this->subtotal = $this->price * $this->quantity;
     }
 }

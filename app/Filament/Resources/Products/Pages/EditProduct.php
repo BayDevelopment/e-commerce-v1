@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Pages;
 
 use App\Filament\Resources\Products\ProductResource;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -16,10 +17,33 @@ class EditProduct extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ViewAction::make(),
-            DeleteAction::make(),
+            // ViewAction::make(),
+            // DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),
+            Action::make('back')
+                ->label('Kembali')
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url(static::getResource()::getUrl('index')),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+
+            $this->getSaveFormAction()
+                ->label('Save Changes')
+                ->icon('heroicon-o-check-circle')
+                ->color('primary'),
+
+            $this->getCancelFormAction()
+                ->label('Cancel')
+                ->icon('heroicon-o-x-mark')
+                ->color('gray')
+                ->url(static::getResource()::getUrl('index')),
+
         ];
     }
 }

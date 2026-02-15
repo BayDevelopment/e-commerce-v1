@@ -18,7 +18,7 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->foreignId('product_id')
+            $table->foreignId('product_variant_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
@@ -26,13 +26,17 @@ return new class extends Migration
             $table->bigInteger('price');
             $table->bigInteger('subtotal');
 
+            // Snapshot data (penting!)
             $table->string('product_name');
-            $table->string('product_sku')->nullable();
+            $table->string('variant_sku')->nullable();
+            $table->string('variant_color')->nullable();
+            $table->string('variant_size')->nullable();
+
             $table->text('note')->nullable();
 
             $table->timestamps();
 
-            $table->index(['order_id', 'product_id']);
+            $table->index(['order_id', 'product_variant_id']);
         });
     }
 

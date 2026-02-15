@@ -18,7 +18,11 @@ return new class extends Migration
             $table->bigInteger('total_price')->default(0);
 
             // PAYMENT
-            $table->string('payment_method')->default('transfer');
+            $table->foreignId('payment_method_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
             $table->string('bank_name')->nullable();
             $table->string('bank_account_number')->nullable();
             $table->string('bank_account_name')->nullable();
@@ -31,6 +35,8 @@ return new class extends Migration
                 ->default('pending');
 
             $table->timestamps();
+
+            $table->index(['user_id', 'status']);
         });
     }
 
