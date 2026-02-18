@@ -17,9 +17,19 @@ class RedirectIfAuthenticatedToDashboard
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            return redirect()->route('customer.dashboard');
-        }
 
+            $user = Auth::user();
+
+            if ($user->role === 'admin') {
+                return redirect('/admin/dashboard');
+            }
+
+            if ($user->role === 'customer') {
+                return redirect()->route('customer.dashboard');
+            }
+
+            return redirect('/');
+        }
 
         return $next($request);
     }

@@ -145,104 +145,54 @@
                 <a href="{{ url('/produk') }}" class="btn btn-outline-td">Lihat Semua</a>
             </div>
 
-            @php
-                $items = [
-                    [
-                        'name' => 'Kaos Oversize Pria',
-                        'price' => 129000,
-                        'old_price' => 179000,
-                        'rating' => 4.7,
-                        'sold' => 1200,
-                        'badge' => 'Best Seller',
-                        'img' => asset('images/baju.png'),
-                    ],
-                    [
-                        'name' => 'Dress Wanita Casual',
-                        'price' => 219000,
-                        'old_price' => null,
-                        'rating' => 4.6,
-                        'sold' => 860,
-                        'badge' => 'Trending',
-                        'img' => asset('images/tas.png'),
-                    ],
-                    [
-                        'name' => 'Jam Tangan Minimalis',
-                        'price' => 299000,
-                        'old_price' => 349000,
-                        'rating' => 4.8,
-                        'sold' => 540,
-                        'badge' => 'New',
-                        'img' => asset('images/jam.png'),
-                    ],
-                ];
-            @endphp
-
             <div class="row g-4">
-                @foreach ($items as $item)
-                    @php
-                        $discount = $item['old_price']
-                            ? round((($item['old_price'] - $item['price']) / $item['old_price']) * 100)
-                            : null;
-                    @endphp
-
+                @foreach ($products as $product)
                     <div class="col-12 col-sm-6 col-lg-4">
                         <div class="td-product-card h-100">
-                            <a href="#" class="td-product-thumb">
-                                <img src="{{ $item['img'] }}" alt="{{ $item['name'] }}">
-                                <span class="td-badge">{{ $item['badge'] }}</span>
+                            <a href="{{ url('produk/' . $product->id) }}" class="td-product-thumb">
 
-                                @if ($discount)
-                                    <span class="td-discount">-{{ $discount }}%</span>
+                                @if ($product->image && count($product->image) > 0)
+                                    <img src="{{ asset('storage/' . $product->image[0]) }}" alt="{{ $product->name }}">
+                                @else
+                                    <img src="{{ asset('images/no-image.png') }}" alt="{{ $product->name }}">
                                 @endif
+
+                                <span class="td-badge {{ $product->is_new ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ $product->is_new ? 'Baru' : 'Lama' }}
+                                </span>
+
                             </a>
 
                             <div class="td-product-body">
-                                <a href="#" class="td-product-title">{{ $item['name'] }}</a>
-
-                                <div class="td-product-meta">
-                                    <div class="td-rating">
-                                        <i class="fa-solid fa-star"></i>
-                                        <span>{{ number_format($item['rating'], 1) }}</span>
-                                        <span class="td-dot">•</span>
-                                        <span class="td-sold">{{ number_format($item['sold']) }} terjual</span>
-                                    </div>
-                                </div>
+                                <a href="{{ url('produk/' . $product->category->slug . '/' . $product->slug) }}"
+                                    class="td-product-title">
+                                    {{ $product->name }}
+                                </a>
 
                                 <div class="td-price-row">
                                     <div class="td-price">
                                         <span class="td-price-now">
-                                            Rp {{ number_format($item['price'], 0, ',', '.') }}
+                                            Rp {{ number_format($product->lowest_price ?? 0, 0, ',', '.') }}
                                         </span>
-                                        @if ($item['old_price'])
-                                            <span class="td-price-old">
-                                                Rp {{ number_format($item['old_price'], 0, ',', '.') }}
-                                            </span>
-                                        @endif
                                     </div>
 
-                                    <a href="#" class="td-cart-btn" title="Tambah ke keranjang">
-                                        <i class="fa-solid fa-cart-plus"></i>
-                                    </a>
+
                                 </div>
 
                                 <div class="d-flex gap-2 mt-3">
-                                    <a href="{{ url('produk/' . Str::slug($item['name'])) }}"
+                                    <a href="{{ url('produk/' . $product->category->slug . '/' . $product->slug) }}"
                                         class="btn btn-td w-100 td-btn-action">
                                         <i class="fa-solid fa-eye"></i>
                                         <span>Detail</span>
                                     </a>
 
-                                    <a href="#" class="btn btn-outline-td w-100 td-btn-action">
-                                        <i class="fa-solid fa-bag-shopping"></i>
-                                        <span>Beli</span>
-                                    </a>
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 @endforeach
             </div>
+
 
             <!-- CTA -->
             <div class="td-cta p-4 p-md-5 mt-5">

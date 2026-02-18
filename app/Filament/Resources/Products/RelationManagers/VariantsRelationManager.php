@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
@@ -11,6 +12,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DissociateAction;
 use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -18,6 +21,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class VariantsRelationManager extends RelationManager
@@ -107,20 +111,53 @@ class VariantsRelationManager extends RelationManager
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                TrashedFilter::make(),
             ])
             ->headerActions([
                 CreateAction::make()
                     ->label('Tambah Variant')
-                    ->icon('heroicon-o-plus'),
-                // AssociateAction::make(),
+                    ->icon('heroicon-o-plus')
+
+                    // Tombol Simpan
+                    ->modalSubmitAction(
+                        fn($action) =>
+                        $action
+                            ->label('Simpan Variant')
+                            ->icon('heroicon-o-check-circle')
+                            ->color('primary')
+                    )
+
+                    // Matikan default create another
+                    ->createAnother(false)
+
+                    // Tambahkan tombol custom Create Another
+                    ->extraModalFooterActions([
+                        Action::make('createAnother')
+                            ->label('Simpan & Tambah Lagi')
+                            ->icon('heroicon-o-plus-circle')
+                            ->color('success')
+                            ->action(function ($livewire) {
+                                $livewire->createAnother();
+                            }),
+                    ])
+
+                    // Tombol Cancel
+                    ->modalCancelAction(
+                        fn($action) =>
+                        $action
+                            ->label('Batal')
+                            ->icon('heroicon-o-x-mark')
+                            ->color('gray')
+                    ),
             ])
+
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make()
                         ->label('Edit')
                         ->icon('heroicon-o-pencil-square')
-                        ->color('primary'),
+                        ->color('primary')
+                        ->visible(fn($record) => ! $record->trashed()),
 
                     DeleteAction::make()
                         ->label('Hapus')
@@ -128,20 +165,39 @@ class VariantsRelationManager extends RelationManager
                         ->color('danger')
                         ->requiresConfirmation()
                         ->modalHeading('Hapus Variant?')
-                        ->modalDescription('Data yang dihapus tidak bisa dikembalikan.')
+                        ->modalDescription('Data akan dipindahkan ke trash.')
                         ->successNotification(
                             Notification::make()
                                 ->title('Berhasil')
-                                ->body('Data berhasil dihapus.')
+                                ->body('Data berhasil dipindahkan ke trash.')
                                 ->success()
-                        ),
+                        )
+                        ->visible(fn($record) => ! $record->trashed()),
+
+                    RestoreAction::make()
+                        ->label('Restore')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Restore Variant?')
+                        ->modalDescription('Data akan dikembalikan.')
+                        ->visible(fn($record) => $record->trashed()),
+
+                    ForceDeleteAction::make()
+                        ->label('Hapus Permanen')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Hapus Permanen?')
+                        ->modalDescription('Data akan dihapus permanen dan tidak bisa dikembalikan.')
+                        ->visible(fn($record) => $record->trashed()),
                 ])
                     ->label('Aksi')
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->button()
                     ->outlined()
                     ->tooltip('Aksi data')
-                    ->dropdownPlacement('bottom-end'),
+                    ->dropdownPlacement('bottom-end')
             ]);
     }
 }

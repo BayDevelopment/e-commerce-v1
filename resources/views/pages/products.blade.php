@@ -1,7 +1,7 @@
-@extends('layouts.customer')
+@extends('layouts.app')
 
-@section('customer')
-    <div class="container-fluid py-2">
+@section('content')
+    <div class="container-fluid py-4">
 
         <!-- HEADER -->
         <div class="mb-4">
@@ -58,40 +58,63 @@
         <div class="row g-4">
 
             @forelse ($products as $product)
-                <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="td-product-card h-100">
+                @php
+                    $firstVariant = $product->variants->first();
+                @endphp
 
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="td-product-card h-100 d-flex flex-column">
+
+                        <!-- IMAGE -->
                         <div class="td-product-image">
-                            <img src="{{ $product->image ? asset('storage/' . $product->image) : 'https://via.placeholder.com/300x200' }}"
-                                alt="{{ $product->name }}">
+                            @if ($product->image && is_array($product->image) && count($product->image))
+                                <img src="{{ asset('storage/' . $product->image[0]) }}" alt="{{ $product->name }}"
+                                    class="img-fluid">
+                            @else
+                                <img src="https://via.placeholder.com/300x200" alt="{{ $product->name }}" class="img-fluid">
+                            @endif
                         </div>
 
-                        <div class="td-product-body d-flex flex-column">
+                        <!-- BODY -->
+                        <div class="td-product-body d-flex flex-column flex-grow-1">
+
                             <h6 class="fw-semibold text-white text-truncate">
                                 {{ $product->name }}
                             </h6>
 
-                            <p class="text-muted small">
-                                {{ Str::limit($product->description ?? '-', 60) }}
+                            <p class="text-secondary small mb-2">
+                                {{ \Illuminate\Support\Str::limit($product->description ?? '-', 60) }}
                             </p>
 
                             <div class="mt-auto d-flex justify-content-between align-items-center">
+
                                 <div class="fw-bold text-white">
-                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    Rp {{ number_format($product->lowest_price ?? 0, 0, ',', '.') }}
                                 </div>
 
-                                <form action="{{ route('cart.add', $product->id) }}" method="POST">
-                                    @csrf
-                                    <button class="btn btn-sm btn-td">
-                                        <i class="fa-solid fa-cart-plus"></i>
+                                @if ($firstVariant)
+                                    <a href="{{ route('products.detail', [
+                                        'category' => $product->category->slug,
+                                        'product' => $product->slug,
+                                    ]) }}"
+                                        class="btn btn-sm btn-td">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                @else
+                                    <button class="btn btn-sm btn-secondary" disabled>
+                                        <i class="fa-solid fa-ban"></i>
                                     </button>
-                                </form>
-                            </div>
-                        </div>
+                                @endif
 
+
+                            </div>
+
+                        </div>
                     </div>
                 </div>
+
             @empty
+
                 <div class="col-12">
                     <div class="alert alert-info text-center">
                         Produk belum tersedia 😢
@@ -103,7 +126,7 @@
 
         <!-- PAGINATION -->
         @if ($products->count())
-            <div class="mt-4">
+            <div class="mt-4 d-flex justify-content-center">
                 {{ $products->links() }}
             </div>
         @endif

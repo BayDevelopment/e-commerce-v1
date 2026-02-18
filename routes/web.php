@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminProdukController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
@@ -22,9 +23,32 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', [HomeController::class, 'index']);
 Route::middleware('redirect.dashboard')->get('/', [HomeController::class, 'index']);
-
 Route::middleware('redirect.dashboard')->get('/produk', [ProductController::class, 'index'])->name('products.index');
-Route::middleware('redirect.dashboard')->get('/produk/{slug}', [HomeController::class, 'details'])->name('products.detail');
+Route::middleware('redirect.dashboard')->get('/produk/{category}/{product}', [HomeController::class, 'show'])->name('products.detail');
+
+// CART
+Route::prefix('cart')
+    ->middleware('redirect.dashboard')
+    ->group(function () {
+
+        Route::get('/', [CartController::class, 'index'])
+            ->name('cart.index');
+
+        Route::post('/add', [CartController::class, 'add'])
+            ->name('cart.add');
+
+        Route::post('/update/{id}', [CartController::class, 'update'])
+            ->name('cart.update');
+
+        Route::delete('/remove/{id}', [CartController::class, 'remove'])
+            ->name('cart.remove');
+    });
+
+
+Route::post('/buy-now', [CheckoutController::class, 'buyNow'])
+    ->middleware('auth')
+    ->name('buy.now');
+
 
 
 /*
@@ -45,6 +69,10 @@ Route::middleware('guest')->prefix('auth')->group(function () {
 Route::post('/auth/logout', [AuthController::class, 'logoutProses'])
     ->middleware('auth')
     ->name('logout.proses');
+Route::get('/auth/logout', function () {
+    return redirect('/');
+});
+
 
 
 /*
@@ -104,6 +132,20 @@ Route::middleware(['auth', 'customer'])
 
         Route::get('/orders', [OrderController::class, 'index'])
             ->name('orders');
+
+        // CART
+        Route::get('/cart', [CartController::class, 'index'])
+            ->name('cart.customer');
+
+
+        Route::post('/add', [CartController::class, 'add'])
+            ->name('cart.add');
+
+        Route::post('/update/{id}', [CartController::class, 'update'])
+            ->name('cart.update');
+
+        Route::delete('/remove/{id}', [CartController::class, 'remove'])
+            ->name('cart.remove');
 
         // Checkout wajib verified
         Route::middleware('verified')->group(function () {

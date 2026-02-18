@@ -1170,3 +1170,27 @@ body {
 .td-toast .swal2-icon {
     margin: 0 8px 0 0 !important;
 }
+/* CART KERANJANG */
+.td-cart-link {
+    color: #fff;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.td-cart-link:hover {
+    color: #a78bfa;
+}
+
+.td-cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}

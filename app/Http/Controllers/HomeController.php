@@ -2,53 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductModel;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        $products = ProductModel::where('is_active', true)
+            ->latest()       // urut berdasarkan created_at desc
+            ->take(3)        // ambil 3 data saja
+            ->get();
+
         $data = [
             'title' => 'Trendora | Fashion & Lifestyle',
-            'navlink' => 'beranda'
+            'navlink' => 'beranda',
+            'products' => $products,
         ];
         return view('pages.home', $data);
     }
 
-    public function details($slug)
+    public function show($categorySlug, $productSlug)
     {
-        // dummy produk
-        $product = [
-            'name' => 'Kaos Oversize Pria',
-            'slug' => $slug,
-            'price' => 129000,
-            'old_price' => 179000,
-            'rating' => 4.7,
-            'sold' => 1200,
-            'stock' => 24,
-            'badge' => 'Best Seller',
-            'description' => 'Kaos oversize berbahan cotton combed 24s, adem dan nyaman untuk dipakai harian.',
-            'images' => [
-                asset('images/baju.png'),
-            ],
-            'variants' => [
-                'Ukuran' => ['S', 'M', 'L', 'XL'],
-                'Warna' => ['Putih', 'Hitam', 'Navy'],
-            ],
-            'specs' => [
-                'Material' => 'Cotton Combed 24s',
-                'Model' => 'Oversize',
-                'Berat' => '250 gram',
-                'Perawatan' => 'Cuci terbalik, jangan pemutih',
-            ],
-        ];
+        $product = ProductModel::with(['variants', 'category'])
+            ->where('slug', $productSlug)
+            ->whereHas('category', function ($q) use ($categorySlug) {
+                $q->where('slug', $categorySlug);
+            })
+            ->firstOrFail();
 
-        $data = [
-            'title'   => 'Detail ' . $product['name'] . ' | Fashion & Lifestyle',
-            'navlink' => 'detail',
+        return view('pages.detail-product', [
+            'title' => 'Detail | Fashion & Lifestyle',
+            'navlink' => 'Detail',
             'product' => $product,
-        ];
-
-        return view('pages.detail-product', $data);
+        ]);
     }
 }

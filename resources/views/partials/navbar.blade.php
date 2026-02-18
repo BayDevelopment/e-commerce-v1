@@ -24,6 +24,33 @@
                         <i class="fa-regular fa-user"></i>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('cart.index') }}" class="td-cart-link position-relative me-3">
+                        <i class="fa-solid fa-cart-shopping fs-5"></i>
+
+                        @php
+                            $cartCount = 0;
+
+                            if (auth()->check()) {
+                                $cart = \App\Models\CartModel::where('user_id', auth()->id())->first();
+                            } else {
+                                $cart = \App\Models\CartModel::where('session_id', session()->getId())->first();
+                            }
+
+                            if ($cart) {
+                                $cartCount = $cart->items()->count();
+                            }
+                        @endphp
+
+                        @if ($cartCount > 0)
+                            <span class="td-cart-badge">
+                                {{ $cartCount }}
+                            </span>
+                        @endif
+                    </a>
+
+                </li>
+
             </ul>
         </div>
     </div>

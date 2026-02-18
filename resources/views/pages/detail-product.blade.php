@@ -5,36 +5,43 @@
         <div class="container">
 
             {{-- Breadcrumb --}}
-            <nav class="td-breadcrumb mb-4" aria-label="breadcrumb">
+            <nav class="td-breadcrumb mb-4">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="{{ '/' }}" class="td-bc-link">Beranda</a>
+                        <a href="{{ url('/') }}" class="td-bc-link">Beranda</a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a href="{{ '/produk' }}" class="td-bc-link">Produk</a>
+                        <a href="{{ url('/produk') }}" class="td-bc-link">Produk</a>
                     </li>
-                    <li class="breadcrumb-item active td-bc-active" aria-current="page">
-                        Kaos Oversize
+                    <li class="breadcrumb-item active td-bc-active">
+                        {{ $product->name }}
                     </li>
                 </ol>
             </nav>
 
-
             <div class="row g-4 align-items-start">
+
                 {{-- Gallery --}}
                 <div class="col-lg-6">
                     <div class="td-detail-gallery">
+
                         <div class="td-main-img">
-                            <img id="mainProductImg" src="{{ $product['images'][0] }}" alt="{{ $product['name'] }}">
-                            @if (!empty($product['badge']))
-                                <span class="td-badge">{{ $product['badge'] }}</span>
+                            <img id="mainProductImg"
+                                src="{{ $product->image && count($product->image)
+                                    ? asset('storage/' . $product->image[0])
+                                    : asset('images/no-image.png') }}"
+                                alt="{{ $product->name }}">
+
+                            @if ($product->created_at->diffInDays(now()) < 4)
+                                <span class="td-badge bg-success">Baru</span>
                             @endif
                         </div>
 
                         <div class="td-thumbs mt-3">
-                            @foreach ($product['images'] as $img)
-                                <button class="td-thumb-btn" type="button" onclick="setMainImg('{{ $img }}')">
-                                    <img src="{{ $img }}" alt="thumb">
+                            @foreach ($product->image ?? [] as $img)
+                                <button type="button" class="td-thumb-btn"
+                                    onclick="setMainImg('{{ asset('storage/' . $img) }}')">
+                                    <img src="{{ asset('storage/' . $img) }}" alt="thumb">
                                 </button>
                             @endforeach
                         </div>
@@ -44,174 +51,247 @@
                 {{-- Info --}}
                 <div class="col-lg-6">
                     <div class="td-detail-card">
-                        <h1 class="td-detail-title">{{ $product['name'] }}</h1>
 
-                        <div class="d-flex align-items-center gap-2 mb-3 td-detail-meta">
-                            <div class="td-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <span>{{ number_format($product['rating'], 1) }}</span>
-                            </div>
-                            <span class="td-dot">•</span>
-                            <span class="td-sold">{{ number_format($product['sold']) }} terjual</span>
-                            <span class="td-dot">•</span>
-                            <span class="td-stock {{ $product['stock'] > 0 ? '' : 'is-out' }}">
-                                {{ $product['stock'] > 0 ? 'Stok: ' . $product['stock'] : 'Stok habis' }}
+                        <h1 class="td-detail-title">{{ $product->name }}</h1>
+
+                        <div class="mb-3">
+                            <span class="td-stock {{ $product->is_in_stock ? '' : 'is-out' }}">
+                                {{ $product->is_in_stock ? 'Stok tersedia: ' . $product->total_stock : 'Stok habis' }}
                             </span>
                         </div>
 
-                        @php
-                            $discount = !empty($product['old_price'])
-                                ? round((($product['old_price'] - $product['price']) / $product['old_price']) * 100)
-                                : null;
-                        @endphp
-
+                        {{-- Harga --}}
                         <div class="td-detail-price mb-4">
-                            <div class="td-price-now">Rp {{ number_format($product['price'], 0, ',', '.') }}</div>
-                            @if (!empty($product['old_price']))
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="td-price-old">Rp
-                                        {{ number_format($product['old_price'], 0, ',', '.') }}
-                                    </div>
-                                    <span class="td-discount">-{{ $discount }}%</span>
-                                </div>
-                            @endif
+                            <div class="td-price-now">
+                                Rp {{ number_format($product->lowest_price ?? 0, 0, ',', '.') }}
+                            </div>
                         </div>
 
                         {{-- Variants --}}
-                        <div class="row g-3 mb-4">
-                            @foreach ($product['variants'] as $label => $options)
-                                <div class="col-12">
-                                    <div class="td-variant">
-                                        <div class="td-variant-label">{{ $label }}</div>
-                                        <div class="td-variant-options">
-                                            @foreach ($options as $opt)
-                                                <label class="td-pill">
-                                                    <input type="radio"
-                                                        name="variant_{{ \Illuminate\Support\Str::slug($label) }}"
-                                                        value="{{ $opt }}">
-                                                    <span>{{ $opt }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
+                        @if ($product->variants->count())
+                            <div class="mb-4">
+                                <div class="td-variant-label mb-2">Pilih Variant</div>
 
-                            <div class="col-12">
-                                <div class="td-qty">
-                                    <div class="td-variant-label">Jumlah</div>
-                                    <div class="td-qty-control">
-                                        <button type="button" class="td-qty-btn" onclick="qtyMinus()">−</button>
-                                        <input id="qtyInput" class="td-qty-input" type="number" value="1"
-                                            min="1">
-                                        <button type="button" class="td-qty-btn" onclick="qtyPlus()">+</button>
-                                    </div>
+                                <div class="td-variant-options">
+                                    @foreach ($product->variants as $variant)
+                                        <label class="td-pill">
+                                            <input type="radio" name="variant_id" value="{{ $variant->id }}"
+                                                data-stock="{{ $variant->stock }}" data-price="{{ $variant->price }}"
+                                                {{ $variant->stock == 0 ? 'disabled' : '' }}>
+
+                                            <span>
+                                                {{ $variant->color }}
+                                                {{ $variant->size ? '- ' . $variant->size : '' }}
+                                                (Rp {{ number_format($variant->price, 0, ',', '.') }})
+                                                @if ($variant->stock == 0)
+                                                    - <span style="color:red;">Stok Habis</span>
+                                                @endif
+                                            </span>
+                                        </label>
+                                    @endforeach
                                 </div>
+                            </div>
+                        @endif
+
+
+                        {{-- Quantity --}}
+                        <div class="mb-4">
+                            <div class="td-variant-label mb-2">
+                                Jumlah
+                                <span id="stockInfo" style="font-size:12px;color:#aaa;"></span>
+                            </div>
+
+                            <div class="td-qty-control">
+                                <button type="button" class="td-qty-btn" onclick="qtyMinus()">−</button>
+                                <input id="qtyInput" class="td-qty-input" type="number" value="1" min="1"
+                                    disabled>
+                                <button type="button" class="td-qty-btn" onclick="qtyPlus()">+</button>
                             </div>
                         </div>
 
+
                         {{-- Actions --}}
-                        <div class="d-flex gap-2">
-                            <a href="#" class="btn btn-outline-td td-btn-action w-100">
-                                <i class="fa-solid fa-cart-shopping"></i>
-                                <span>Tambah ke Keranjang</span>
-                            </a>
+                        <form id="productActionForm" method="POST" class="w-100">
+                            @csrf
 
-                            <a href="#" class="btn btn-td td-btn-action w-100">
-                                <i class="fa-solid fa-bolt"></i>
-                                <span>Beli Sekarang</span>
-                            </a>
+                            <input type="hidden" name="variant_id" id="formVariantId">
+                            <input type="hidden" name="qty" id="formQty">
 
-                        </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" onclick="submitCart()" class="btn btn-outline-td w-100">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                    Tambah ke Keranjang
+                                </button>
+
+                                <button type="button" onclick="submitBuyNow()" class="btn btn-td w-100">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    Beli Sekarang
+                                </button>
+                            </div>
+                        </form>
+
 
                         <hr style="border-color: rgba(255,255,255,.12)" class="my-4">
 
-                        {{-- Short desc --}}
-                        <p class="td-subtitle mb-0">{{ $product['description'] }}</p>
+                        {{-- Description --}}
+                        <p class="td-subtitle text-white mb-0">
+                            {{ $product->description }}
+                        </p>
+
                     </div>
                 </div>
             </div>
-
-            {{-- Tabs --}}
-            <div class="td-detail-tabs mt-5">
-                <ul class="nav nav-pills gap-2 mb-3" id="pills-tab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active td-pilltab" data-bs-toggle="pill" data-bs-target="#tab-desc"
-                            type="button">Deskripsi</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link td-pilltab" data-bs-toggle="pill" data-bs-target="#tab-spec"
-                            type="button">Spesifikasi</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link td-pilltab" data-bs-toggle="pill" data-bs-target="#tab-review"
-                            type="button">Ulasan</button>
-                    </li>
-                </ul>
-
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="tab-desc">
-                        <div class="td-detail-panel">
-                            <p class="mb-0" style="color:rgba(255,255,255,.85)">{{ $product['description'] }}</p>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="tab-spec">
-                        <div class="td-detail-panel">
-                            <div class="row g-2">
-                                @foreach ($product['specs'] as $k => $v)
-                                    <div class="col-12 col-md-6">
-                                        <div class="td-spec-row">
-                                            <span class="td-spec-key">{{ $k }}</span>
-                                            <span class="td-spec-val">{{ $v }}</span>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="tab-review">
-                        <div class="td-detail-panel">
-                            <div class="td-review">
-                                <div class="d-flex justify-content-between">
-                                    <strong style="color:#fff">Aulia</strong>
-                                    <span style="color:rgba(255,255,255,.7)">5.0 ★</span>
-                                </div>
-                                <p class="mb-0" style="color:rgba(255,255,255,.85)">Bahannya enak, cuttingnya cakep.
-                                    Pengiriman cepat.</p>
-                            </div>
-                            <div class="td-review mt-3">
-                                <div class="d-flex justify-content-between">
-                                    <strong style="color:#fff">Rizky</strong>
-                                    <span style="color:rgba(255,255,255,.7)">4.5 ★</span>
-                                </div>
-                                <p class="mb-0" style="color:rgba(255,255,255,.85)">Sesuai foto, worth it untuk
-                                    harganya.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </section>
 @endsection
+
+
 @section('scripts')
-    {{-- JS kecil untuk gallery + qty --}}
     <script>
-        function setMainImg(src) {
-            document.getElementById('mainProductImg').src = src;
-        }
+        document.addEventListener('DOMContentLoaded', function() {
 
-        function qtyMinus() {
-            const el = document.getElementById('qtyInput');
-            el.value = Math.max(1, (parseInt(el.value || 1) - 1));
-        }
+            const isLoggedIn = @json(auth()->check());
 
-        function qtyPlus() {
-            const el = document.getElementById('qtyInput');
-            el.value = Math.max(1, (parseInt(el.value || 1) + 1));
-        }
+            const radios = document.querySelectorAll('input[name="variant_id"]');
+            const qtyInput = document.getElementById('qtyInput');
+            const stockInfo = document.getElementById('stockInfo');
+            const form = document.getElementById('productActionForm');
+            const buttons = form ? form.querySelectorAll('button') : [];
+
+            // Disable qty & tombol awal
+            if (qtyInput) qtyInput.disabled = true;
+            buttons.forEach(btn => btn.disabled = true);
+
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+
+                    const stock = parseInt(this.dataset.stock || 0);
+
+                    if (qtyInput) {
+                        qtyInput.value = 1;
+                        qtyInput.max = stock;
+                        qtyInput.disabled = stock <= 0;
+                    }
+
+                    if (stockInfo) {
+                        stockInfo.innerHTML = stock > 0 ?
+                            'Stok tersedia: ' + stock :
+                            'Stok habis';
+                    }
+
+                    buttons.forEach(btn => btn.disabled = stock <= 0);
+                });
+            });
+
+            // ===============================
+            // 🔥 GLOBAL FUNCTIONS
+            // ===============================
+
+            window.setMainImg = function(src) {
+                const mainImg = document.getElementById('mainProductImg');
+                if (!mainImg) return;
+
+                mainImg.style.opacity = 0;
+                setTimeout(() => {
+                    mainImg.src = src;
+                    mainImg.style.opacity = 1;
+                }, 150);
+            }
+
+            window.qtyMinus = function() {
+                if (!qtyInput || qtyInput.disabled) return;
+                qtyInput.value = Math.max(1, parseInt(qtyInput.value || 1) - 1);
+            }
+
+            window.qtyPlus = function() {
+                if (!qtyInput || qtyInput.disabled) return;
+                const max = parseInt(qtyInput.max || 1);
+                qtyInput.value = Math.min(max, parseInt(qtyInput.value || 1) + 1);
+            }
+
+            window.getSelectedVariant = function() {
+                return document.querySelector('input[name="variant_id"]:checked');
+            }
+
+            window.validateProductSelection = function() {
+
+                const selected = getSelectedVariant();
+
+                if (!selected) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Variant belum dipilih',
+                        text: 'Silakan pilih variant terlebih dahulu.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return false;
+                }
+
+                if (!qtyInput || qtyInput.disabled) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Jumlah tidak valid',
+                        text: 'Silakan pilih variant dengan stok tersedia.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return false;
+                }
+
+                return true;
+            }
+
+            window.submitCart = function() {
+
+                if (!validateProductSelection()) return;
+
+                const selected = getSelectedVariant();
+
+                document.getElementById('formVariantId').value = selected.value;
+                document.getElementById('formQty').value = qtyInput.value;
+
+                form.action = "{{ route('cart.add') }}";
+                form.submit();
+            }
+
+            window.submitBuyNow = function() {
+
+                if (!validateProductSelection()) return;
+
+                if (!isLoggedIn) {
+
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Login Diperlukan',
+                        text: 'Silakan login terlebih dahulu untuk melanjutkan pembelian.',
+                        confirmButtonColor: '#6366f1',
+                        confirmButtonText: 'Login Sekarang',
+                        showCancelButton: true,
+                        cancelButtonText: 'Nanti Saja'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{{ route('login') }}?redirect=checkout";
+                        }
+                    });
+
+                    return;
+                }
+
+                const selected = getSelectedVariant();
+
+                document.getElementById('formVariantId').value = selected.value;
+                document.getElementById('formQty').value = qtyInput.value;
+
+                form.action = "{{ route('buy.now') }}";
+                form.submit();
+            }
+
+        });
     </script>
+@endsection
+@section('styles')
+    <style>
+        #mainProductImg {
+            transition: opacity .2s ease;
+        }
+    </style>
 @endsection

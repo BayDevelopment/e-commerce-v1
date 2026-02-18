@@ -18,7 +18,7 @@ class CreateProduct extends CreateRecord
     {
         return Notification::make()
             ->title('Berhasil')
-            ->body('Data operator berhasil ditambahkan.')
+            ->body('Data product berhasil ditambahkan.')
             ->success();
     }
 
