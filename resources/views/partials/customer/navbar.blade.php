@@ -19,7 +19,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link nav-underline {{ $navlink === 'product' ? 'active' : '' }}"
+                    <a class="nav-link nav-underline {{ $navlink === 'produk' ? 'active' : '' }}"
                         href="{{ url('/customer/product') }}">
                         Product
                     </a>
@@ -31,7 +31,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('customer.cart.customer') }}" class="td-cart-link position-relative me-3">
+                    <a href="{{ route('customer.cart.index') }}" class="td-cart-link position-relative me-3">
                         <i class="fa-solid fa-cart-shopping fs-5"></i>
 
                         @php

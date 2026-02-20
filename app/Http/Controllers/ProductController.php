@@ -9,36 +9,38 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ProductModel::where('is_active', true)
-            ->with(['variants']);
+        $query = ProductModel::query()
+            ->where('is_active', true)
+            ->with(['variants'])
+            ->withMin('variants', 'price'); // ambil lowest price
 
         // 🔍 SEARCH
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // 💰 FILTER HARGA (pakai lowest variant price)
+        // 💰 FILTER BERDASARKAN LOWEST PRICE
         if ($request->filled('min_price')) {
-            $query->whereHas('variants', function ($q) use ($request) {
-                $q->where('price', '>=', $request->min_price);
-            });
+            $query->having('variants_min_price', '>=', $request->min_price);
         }
 
         if ($request->filled('max_price')) {
-            $query->whereHas('variants', function ($q) use ($request) {
-                $q->where('price', '<=', $request->max_price);
-            });
+            $query->having('variants_min_price', '<=', $request->max_price);
         }
 
         // 🔄 SORT
-        if ($request->sort == 'price_asc') {
-            $query->withMin('variants', 'price')
-                ->orderBy('variants_min_price', 'asc');
-        } elseif ($request->sort == 'price_desc') {
-            $query->withMin('variants', 'price')
-                ->orderBy('variants_min_price', 'desc');
-        } else {
-            $query->latest();
+        switch ($request->sort) {
+            case 'price_asc':
+                $query->orderBy('variants_min_price', 'asc');
+                break;
+
+            case 'price_desc':
+                $query->orderBy('variants_min_price', 'desc');
+                break;
+
+            default:
+                $query->latest();
+                break;
         }
 
         $products = $query->paginate(12)->withQueryString();
@@ -49,6 +51,7 @@ class ProductController extends Controller
             'products' => $products,
         ]);
     }
+
 
     public function productsCustomer(Request $request)
     {

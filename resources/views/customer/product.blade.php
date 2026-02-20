@@ -1,41 +1,39 @@
 @extends('layouts.customer')
 
 @section('customer')
-    <div class="container-fluid py-4">
+    <div class="product-wrapper">
 
         <!-- HEADER -->
-        <div class="mb-4">
-            <h3 class="fw-bold text-white mb-1">Produk Kami 🛍️</h3>
-            <p class="text-muted mb-0">Pilih produk terbaik untuk kebutuhan kamu</p>
+        <div class="product-header">
+            <h2>Produk Kami 🛍️</h2>
+            <p>Temukan produk terbaik untuk gaya dan kebutuhan kamu</p>
         </div>
 
         <!-- FILTER -->
-        <form method="GET" class="td-card p-3 mb-4">
+        <form method="GET" class="filter-card mb-5">
             <div class="row g-3 align-items-end">
 
-                <!-- SEARCH -->
                 <div class="col-md-4">
-                    <label class="small text-white">Cari Produk</label>
-                    <input type="text" name="search" value="{{ request('search') }}" class="form-control td-input"
+                    <label>Cari Produk</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control modern-input"
                         placeholder="Nama produk...">
                 </div>
 
-                <!-- MIN PRICE -->
                 <div class="col-md-2">
-                    <label class="small text-white">Harga Min</label>
-                    <input type="number" name="min_price" value="{{ request('min_price') }}" class="form-control td-input">
+                    <label>Harga Min</label>
+                    <input type="number" name="min_price" value="{{ request('min_price') }}"
+                        class="form-control modern-input">
                 </div>
 
-                <!-- MAX PRICE -->
                 <div class="col-md-2">
-                    <label class="small text-white">Harga Max</label>
-                    <input type="number" name="max_price" value="{{ request('max_price') }}" class="form-control td-input">
+                    <label>Harga Max</label>
+                    <input type="number" name="max_price" value="{{ request('max_price') }}"
+                        class="form-control modern-input">
                 </div>
 
-                <!-- SORT -->
                 <div class="col-md-2">
-                    <label class="small text-white">Urutkan</label>
-                    <select name="sort" class="form-select td-input">
+                    <label>Urutkan</label>
+                    <select name="sort" class="form-select modern-input">
                         <option value="">Terbaru</option>
                         <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>
                             Harga Termurah
@@ -46,12 +44,11 @@
                     </select>
                 </div>
 
-                <!-- BUTTON -->
                 <div class="col-md-2 d-flex gap-2">
-                    <button class="btn btn-td w-100">
-                        <i class="fa-solid fa-filter"></i>
+                    <button class="btn btn-modern w-100">
+                        Filter
                     </button>
-                    <a href="{{ route('customer.product') }}" class="btn btn-outline-light w-100">
+                    <a href="{{ route('customer.product') }}" class="btn btn-reset w-100">
                         Reset
                     </a>
                 </div>
@@ -66,53 +63,49 @@
                 @php
                     $firstVariant = $product->variants->first();
                     $firstImage = is_array($product->image) && count($product->image) ? $product->image[0] : null;
-                    $lowestPrice = $product->variants->min('price');
+                    $lowestPrice = $product->variants_min_price ?? 0;
                 @endphp
 
                 <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="td-product-card h-100 d-flex flex-column">
+                    <div class="product-card h-100">
 
                         <!-- IMAGE -->
-                        <div class="td-product-image">
-                            @if ($firstImage)
-                                <img src="{{ asset('storage/' . $firstImage) }}" alt="{{ $product->name }}"
-                                    class="img-fluid">
-                            @else
-                                <img src="https://via.placeholder.com/300x200" alt="{{ $product->name }}" class="img-fluid">
-                            @endif
+                        <div class="product-image">
+                            <img src="{{ $firstImage ? asset('storage/' . $firstImage) : 'https://via.placeholder.com/400x300' }}"
+                                alt="{{ $product->name }}">
                         </div>
 
                         <!-- BODY -->
-                        <div class="td-product-body d-flex flex-column flex-grow-1">
+                        <div class="product-body">
 
-                            <h6 class="fw-semibold text-white text-truncate">
-                                {{ $product->name }}
-                            </h6>
+                            <h6>{{ $product->name }}</h6>
 
-                            <p class="text-muted small mb-2">
+                            <p>
                                 {{ \Illuminate\Support\Str::limit($product->description ?? '-', 60) }}
                             </p>
 
-                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <div class="product-footer">
+                                <div class="price">
+                                    @php
+                                        $lowestPrice = $product->variants->min('price') ?? 0;
+                                    @endphp
 
-                                <!-- PRICE -->
-                                <div class="fw-bold text-white">
-                                    Rp {{ number_format($lowestPrice ?? 0, 0, ',', '.') }}
+                                    Rp {{ number_format($lowestPrice, 0, ',', '.') }}
+
                                 </div>
 
-                                <!-- ADD TO CART -->
                                 @if ($firstVariant)
-                                    <form action="{{ route('cart.add') }}" method="POST">
+                                    <form action="{{ route('customer.cart.add') }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="variant_id" value="{{ $firstVariant->id }}">
                                         <input type="hidden" name="qty" value="1">
 
-                                        <button class="btn btn-sm btn-td">
+                                        <button type="submit" class="btn-cart">
                                             <i class="fa-solid fa-cart-plus"></i>
                                         </button>
                                     </form>
                                 @else
-                                    <button class="btn btn-sm btn-secondary" disabled>
+                                    <button class="btn-cart disabled">
                                         <i class="fa-solid fa-ban"></i>
                                     </button>
                                 @endif
@@ -120,13 +113,13 @@
                             </div>
 
                         </div>
+
                     </div>
                 </div>
 
             @empty
-
                 <div class="col-12">
-                    <div class="alert alert-info text-center">
+                    <div class="empty-state">
                         Produk belum tersedia 😢
                     </div>
                 </div>
@@ -136,10 +129,155 @@
 
         <!-- PAGINATION -->
         @if ($products->count())
-            <div class="mt-4 d-flex justify-content-center">
+            <div class="mt-5 d-flex justify-content-center">
                 {{ $products->links() }}
             </div>
         @endif
 
     </div>
+@endsection
+@section('styles')
+    <style>
+        .product-wrapper {
+            padding: 100px 30px 40px;
+        }
+
+        /* HEADER */
+        .product-header h2 {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .product-header p {
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+
+        /* FILTER CARD */
+        .filter-card {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 25px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .filter-card label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .modern-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-radius: 12px;
+        }
+
+        /* BUTTON */
+        .btn-modern {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+            border-radius: 12px;
+        }
+
+        .btn-modern:hover {
+            opacity: 0.9;
+        }
+
+        .btn-reset {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 12px;
+        }
+
+        /* PRODUCT CARD */
+        .product-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .product-image {
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .product-card:hover img {
+            transform: scale(1.08);
+        }
+
+        .product-body {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-body h6 {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .product-body p {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            flex-grow: 1;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .btn-cart {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 10px;
+        }
+
+        .btn-cart.disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            padding: 60px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            color: #9ca3af;
+        }
+    </style>
+
+    <script>
+        document.querySelector('select[name="sort"]')
+            ?.addEventListener('change', function() {
+                this.form.submit();
+            });
+    </script>
 @endsection

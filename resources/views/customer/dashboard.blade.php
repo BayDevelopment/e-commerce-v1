@@ -1,10 +1,10 @@
 @extends('layouts.customer')
 
 @section('customer')
-    <div class="container-fluid py-2">
+    <div class="container-fluid pt-5 pb-2">
 
         <!-- HEADER -->
-        <div class="mb-4">
+        <div class="mb-1 ">
             <h3 class="fw-bold text-white mb-1">
                 Halo, {{ Auth::user()->name }} 👋
             </h3>
@@ -23,7 +23,7 @@
                         <div>
                             <p class="text-secondary small mb-1">Total Produk</p>
                             <h4 class="fw-bold text-white mb-0">
-                                {{ $totalProducts ?? 0 }}
+                                {{ $AllProduct ?? 0 }}
                             </h4>
                         </div>
                         <div class="td-dashboard-icon bg-primary">

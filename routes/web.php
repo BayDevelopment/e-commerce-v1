@@ -117,7 +117,6 @@ Route::middleware(['auth', 'customer'])
     ->name('customer.')
     ->group(function () {
 
-        // Dashboard (boleh walau belum verified)
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
 
@@ -133,21 +132,33 @@ Route::middleware(['auth', 'customer'])
         Route::get('/orders', [OrderController::class, 'index'])
             ->name('orders');
 
-        // CART
-        Route::get('/cart', [CartController::class, 'index'])
-            ->name('cart.customer');
+        /*
+        |--------------------------------------------------------------------------
+        | CUSTOMER CART
+        |--------------------------------------------------------------------------
+        */
+        Route::prefix('cart')
+            ->name('cart.')
+            ->group(function () {
 
+                Route::get('/', [CartController::class, 'indexCustomer'])
+                    ->name('index');
 
-        Route::post('/add', [CartController::class, 'add'])
-            ->name('cart.add');
+                Route::post('/add', [CartController::class, 'addCustomer'])
+                    ->name('add');
 
-        Route::post('/update/{id}', [CartController::class, 'update'])
-            ->name('cart.update');
+                Route::post('/update/{id}', [CartController::class, 'updateCustomer'])
+                    ->name('update');
 
-        Route::delete('/remove/{id}', [CartController::class, 'remove'])
-            ->name('cart.remove');
+                Route::delete('/remove/{id}', [CartController::class, 'removeCustomer'])
+                    ->name('remove');
+            });
 
-        // Checkout wajib verified
+        /*
+        |--------------------------------------------------------------------------
+        | CHECKOUT (verified only)
+        |--------------------------------------------------------------------------
+        */
         Route::middleware('verified')->group(function () {
             Route::get('/checkout', [CheckoutController::class, 'index'])
                 ->name('checkout');

@@ -21,7 +21,7 @@
         @include('partials.customer.navbar')
     </header>
 
-    <main>
+    <main class="customer-content">
         @yield('customer')
     </main>
 

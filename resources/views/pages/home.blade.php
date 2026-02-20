@@ -149,7 +149,8 @@
                 @foreach ($products as $product)
                     <div class="col-12 col-sm-6 col-lg-4">
                         <div class="td-product-card h-100">
-                            <a href="{{ url('produk/' . $product->id) }}" class="td-product-thumb">
+                            <a href="{{ url('produk/' . $product->category->slug . '/' . $product->slug) }}"
+                                class="td-product-thumb">
 
                                 @if ($product->image && count($product->image) > 0)
                                     <img src="{{ asset('storage/' . $product->image[0]) }}" alt="{{ $product->name }}">
