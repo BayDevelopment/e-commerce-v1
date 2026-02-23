@@ -89,27 +89,28 @@
                                     @php
                                         $lowestPrice = $product->variants->min('price') ?? 0;
                                     @endphp
-
                                     Rp {{ number_format($lowestPrice, 0, ',', '.') }}
-
                                 </div>
 
-                                @if ($firstVariant)
-                                    <form action="{{ route('customer.cart.add') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="variant_id" value="{{ $firstVariant->id }}">
-                                        <input type="hidden" name="qty" value="1">
+                                @php
+                                    $hasVariant = $product->variants->isNotEmpty();
+                                @endphp
 
-                                        <button type="submit" class="btn-cart">
-                                            <i class="fa-solid fa-cart-plus"></i>
+                                <div class="action-buttons">
+                                    @if ($hasVariant)
+                                        <a href="{{ route('customer.detail.produk', [
+                                            'category' => $product->category->slug,
+                                            'product' => $product->slug,
+                                        ]) }}"
+                                            class="btn-action">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    @else
+                                        <button class="btn-action opacity-50" disabled>
+                                            <i class="fa-solid fa-eye-slash"></i>
                                         </button>
-                                    </form>
-                                @else
-                                    <button class="btn-cart disabled">
-                                        <i class="fa-solid fa-ban"></i>
-                                    </button>
-                                @endif
-
+                                    @endif
+                                </div>
                             </div>
 
                         </div>

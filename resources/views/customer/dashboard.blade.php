@@ -16,72 +16,79 @@
         <!-- STAT CARDS -->
         <div class="row g-4 mb-4">
 
-            <!-- TOTAL PRODUK -->
             <div class="col-lg-3 col-md-6">
-                <div class="td-card p-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-secondary small mb-1">Total Produk</p>
-                            <h4 class="fw-bold text-white mb-0">
-                                {{ $AllProduct ?? 0 }}
-                            </h4>
-                        </div>
-                        <div class="td-dashboard-icon bg-primary">
-                            <i class="fa-solid fa-box"></i>
+                <a href="{{ route('customer.product') }}" class="td-card-link text-decoration-none">
+                    <div class="td-card p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-secondary small mb-1">Total Produk</p>
+                                <h4 class="fw-bold text-white mb-0">
+                                    {{ $AllProduct ?? 0 }}
+                                </h4>
+                            </div>
+                            <div class="td-dashboard-icon bg-primary">
+                                <i class="fa-solid fa-box"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- PESANAN SAYA -->
             <div class="col-lg-3 col-md-6">
-                <div class="td-card p-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-secondary small mb-1">Pesanan Saya</p>
-                            <h4 class="fw-bold text-white mb-0">
-                                {{ $totalOrders ?? 0 }}
-                            </h4>
-                        </div>
-                        <div class="td-dashboard-icon bg-info">
-                            <i class="fa-solid fa-receipt"></i>
+                <a href="{{ route('customer.orders') }}" class="td-card-link text-decoration-none">
+                    <div class="td-card p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-secondary small mb-1">Pesanan Saya</p>
+                                <h4 class="fw-bold text-white mb-0">
+                                    {{ $totalOrders ?? 0 }}
+                                </h4>
+                            </div>
+                            <div class="td-dashboard-icon bg-info">
+                                <i class="fa-solid fa-receipt"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- DIPROSES -->
             <div class="col-lg-3 col-md-6">
-                <div class="td-card p-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-secondary small mb-1">Sedang Diproses</p>
-                            <h4 class="fw-bold text-white mb-0">
-                                {{ $orderProcess ?? 0 }}
-                            </h4>
-                        </div>
-                        <div class="td-dashboard-icon bg-warning">
-                            <i class="fa-solid fa-truck-fast"></i>
+                <a href="{{ route('customer.orders', ['status' => 'process']) }}" class="td-card-link text-decoration-none">
+                    <div class="td-card p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-secondary small mb-1">Sedang Diproses</p>
+                                <h4 class="fw-bold text-white mb-0">
+                                    {{ $orderProcess ?? 0 }}
+                                </h4>
+                            </div>
+                            <div class="td-dashboard-icon bg-warning">
+                                <i class="fa-solid fa-truck-fast"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- SELESAI -->
             <div class="col-lg-3 col-md-6">
-                <div class="td-card p-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <p class="text-secondary small mb-1">Pesanan Selesai</p>
-                            <h4 class="fw-bold text-white mb-0">
-                                {{ $orderDone ?? 0 }}
-                            </h4>
-                        </div>
-                        <div class="td-dashboard-icon bg-success">
-                            <i class="fa-solid fa-circle-check"></i>
+                <a href="{{ route('customer.orders', ['status' => 'done']) }}" class="td-card-link text-decoration-none">
+                    <div class="td-card p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-secondary small mb-1">Pesanan Selesai</p>
+                                <h4 class="fw-bold text-white mb-0">
+                                    {{ $orderDone ?? 0 }}
+                                </h4>
+                            </div>
+                            <div class="td-dashboard-icon bg-success">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
         </div>

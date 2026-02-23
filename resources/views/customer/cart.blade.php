@@ -51,13 +51,13 @@
                                             {{-- QTY --}}
                                             <div class="td-qty-control">
 
-                                                <button type="button" onclick="qtyMinus(this)">−</button>
+                                                <button type="button" class="qty-minus">−</button>
 
                                                 <input type="number" value="{{ $item->qty }}" min="1"
                                                     max="{{ $item->variant->stock }}"
                                                     data-price="{{ $item->variant->price }}" class="cart-qty">
 
-                                                <button type="button" onclick="qtyPlus(this)">+</button>
+                                                <button type="button" class="qty-plus">+</button>
 
                                             </div>
 
@@ -104,15 +104,15 @@
                             </div>
 
                             @auth
-                                <button onclick="submitBuyNow()" class="btn btn-td w-100">
+                                <a href="{{ route('customer.checkout') }}" class="btn btn-td w-100">
                                     <i class="fa-solid fa-bolt"></i>
                                     Beli Sekarang
-                                </button>
-                            @else
-                                <a href="{{ route('login') }}" class="btn btn-td w-100">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    Login untuk Beli
                                 </a>
+                            @else
+                                <button class="btn btn-td w-100" disabled style="opacity:0.6; cursor:not-allowed;">
+                                    <i class="fa-solid fa-lock"></i>
+                                    Login untuk Beli
+                                </button>
                             @endauth
 
                         </div>
@@ -202,33 +202,35 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            const qtyInputs = document.querySelectorAll('.cart-qty');
             const grandTotalEl = document.getElementById('grandTotal');
 
             function formatRupiah(number) {
-                return 'Rp ' + number.toLocaleString('id-ID');
+                return 'Rp ' + Number(number).toLocaleString('id-ID');
             }
 
             function calculateGrandTotal() {
                 let total = 0;
                 document.querySelectorAll('.cart-subtotal').forEach(sub => {
-                    total += parseInt(sub.dataset.subtotal);
+                    total += Number(sub.dataset.subtotal || 0);
                 });
-                grandTotalEl.innerText = formatRupiah(total);
+
+                if (grandTotalEl) {
+                    grandTotalEl.innerText = formatRupiah(total);
+                }
             }
 
-            qtyInputs.forEach(input => {
+            function updateSubtotal(input) {
+                const qty = Math.max(1, Number(input.value));
+                const max = Number(input.max);
+                const price = Number(input.dataset.price);
 
-                input.addEventListener('input', function() {
+                let finalQty = qty;
 
-                    let qty = parseInt(this.value);
-                    const max = parseInt(this.max);
-                    const price = parseInt(this.dataset.price);
+                if (qty > max) {
+                    finalQty = max;
+                    input.value = max;
 
-                    if (qty > max) {
-                        qty = max;
-                        this.value = max;
-
+                    if (typeof Swal !== 'undefined') {
                         Swal.fire({
                             icon: 'warning',
                             title: 'Stok tidak mencukupi',
@@ -236,79 +238,93 @@
                             confirmButtonColor: '#6366f1'
                         });
                     }
+                }
 
-                    if (qty < 1) {
-                        qty = 1;
-                        this.value = 1;
-                    }
+                if (finalQty < 1) {
+                    finalQty = 1;
+                    input.value = 1;
+                }
 
-                    const subtotal = qty * price;
-                    const subtotalEl = this.closest('.row').querySelector('.cart-subtotal');
+                const subtotal = finalQty * price;
 
-                    subtotalEl.dataset.subtotal = subtotal;
-                    subtotalEl.innerText = formatRupiah(subtotal);
+                const card = input.closest('.td-cart-card');
+                const subtotalEl = card.querySelector('.cart-subtotal');
 
-                    calculateGrandTotal();
-                });
-            });
+                subtotalEl.dataset.subtotal = subtotal;
+                subtotalEl.innerText = formatRupiah(subtotal);
 
-            // DELETE CONFIRMATION
-            document.querySelectorAll('.btn-remove').forEach(button => {
+                calculateGrandTotal();
+            }
 
-                button.addEventListener('click', function() {
+            // EVENT DELEGATION (lebih clean & scalable)
+            document.addEventListener('click', function(e) {
 
-                    const url = this.dataset.url;
+                // QTY MINUS
+                if (e.target.closest('.qty-minus')) {
+                    const input = e.target.closest('.td-qty-control')
+                        .querySelector('.cart-qty');
+                    input.stepDown();
+                    updateSubtotal(input);
+                }
 
-                    Swal.fire({
-                        title: 'Hapus item?',
-                        text: "Item akan dihapus dari keranjang.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Ya, Hapus',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
+                // QTY PLUS
+                if (e.target.closest('.qty-plus')) {
+                    const input = e.target.closest('.td-qty-control')
+                        .querySelector('.cart-qty');
+                    input.stepUp();
+                    updateSubtotal(input);
+                }
 
-                        if (result.isConfirmed) {
+                // DELETE
+                if (e.target.closest('.btn-remove')) {
 
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = url;
+                    const button = e.target.closest('.btn-remove');
+                    const url = button.dataset.url;
 
-                            const csrf = document.createElement('input');
-                            csrf.type = 'hidden';
-                            csrf.name = '_token';
-                            csrf.value = '{{ csrf_token() }}';
-
-                            const method = document.createElement('input');
-                            method.type = 'hidden';
-                            method.name = '_method';
-                            method.value = 'DELETE';
-
-                            form.appendChild(csrf);
-                            form.appendChild(method);
-
-                            document.body.appendChild(form);
-                            form.submit();
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Hapus item?',
+                            text: 'Item akan dihapus dari keranjang.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Ya, Hapus',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                submitDelete(url);
+                            }
+                        });
+                    } else {
+                        if (confirm('Hapus item dari keranjang?')) {
+                            submitDelete(url);
                         }
-                    });
+                    }
+                }
+            });
+
+            // INPUT MANUAL QTY
+            document.querySelectorAll('.cart-qty').forEach(input => {
+                input.addEventListener('input', function() {
+                    updateSubtotal(this);
                 });
             });
 
+            function submitDelete(url) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+
+                form.innerHTML = `
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="_method" value="DELETE">
+        `;
+
+                document.body.appendChild(form);
+                form.submit();
+            }
 
         });
-
-        function qtyMinus(btn) {
-            const input = btn.parentElement.querySelector('.cart-qty');
-            input.stepDown();
-            input.dispatchEvent(new Event('input'));
-        }
-
-        function qtyPlus(btn) {
-            const input = btn.parentElement.querySelector('.cart-qty');
-            input.stepUp();
-            input.dispatchEvent(new Event('input'));
-        }
     </script>
 @endsection

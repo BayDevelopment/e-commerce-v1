@@ -172,21 +172,35 @@
 
                                 <div class="td-price-row">
                                     <div class="td-price">
+                                        @php
+                                            $lowestPrice = $product->variants->min('price');
+                                        @endphp
+
                                         <span class="td-price-now">
-                                            Rp {{ number_format($product->lowest_price ?? 0, 0, ',', '.') }}
+                                            Rp {{ number_format($lowestPrice ?? 0, 0, ',', '.') }}
                                         </span>
                                     </div>
 
 
                                 </div>
 
-                                <div class="d-flex gap-2 mt-3">
-                                    <a href="{{ url('produk/' . $product->category->slug . '/' . $product->slug) }}"
-                                        class="btn btn-td w-100 td-btn-action">
-                                        <i class="fa-solid fa-eye"></i>
-                                        <span>Detail</span>
-                                    </a>
+                                @php
+                                    $hasVariant = $product->variants->isNotEmpty();
+                                @endphp
 
+                                <div class="d-flex gap-2 mt-3">
+                                    @if ($hasVariant)
+                                        <a href="{{ url('produk/' . $product->category->slug . '/' . $product->slug) }}"
+                                            class="btn btn-td w-100 td-btn-action">
+                                            <i class="fa-solid fa-eye"></i>
+                                            <span>Detail</span>
+                                        </a>
+                                    @else
+                                        <button class="btn btn-secondary w-100" disabled>
+                                            <i class="fa-solid fa-ban"></i>
+                                            <span>Tidak Tersedia</span>
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>

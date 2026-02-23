@@ -11,31 +11,32 @@ class ProductController extends Controller
     {
         $query = ProductModel::query()
             ->where('is_active', true)
-            ->with(['variants'])
-            ->withMin('variants', 'price'); // ambil lowest price
+            ->whereHas('variants') // 🔥 hanya produk yg punya variant
+            ->with(['variants', 'category'])
+            ->withMin('variants as lowest_price', 'price');
 
         // 🔍 SEARCH
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // 💰 FILTER BERDASARKAN LOWEST PRICE
+        // 💰 FILTER PRICE
         if ($request->filled('min_price')) {
-            $query->having('variants_min_price', '>=', $request->min_price);
+            $query->where('lowest_price', '>=', $request->min_price);
         }
 
         if ($request->filled('max_price')) {
-            $query->having('variants_min_price', '<=', $request->max_price);
+            $query->where('lowest_price', '<=', $request->max_price);
         }
 
         // 🔄 SORT
         switch ($request->sort) {
             case 'price_asc':
-                $query->orderBy('variants_min_price', 'asc');
+                $query->orderBy('lowest_price', 'asc');
                 break;
 
             case 'price_desc':
-                $query->orderBy('variants_min_price', 'desc');
+                $query->orderBy('lowest_price', 'desc');
                 break;
 
             default:
@@ -55,15 +56,25 @@ class ProductController extends Controller
 
     public function productsCustomer(Request $request)
     {
-        // 🔎 BASE QUERY
         $baseQuery = ProductModel::query()
             ->where('is_active', true)
-            ->with(['variants'])
+
+            // 🔥 hanya produk yg punya variant dengan stock > 0
+            ->whereHas('variants', function ($q) {
+                $q->where('stock', '>', 0);
+            })
+
+            // 🔥 ambil lowest price hanya dari variant yg stock > 0
+            ->withMin(['variants' => function ($q) {
+                $q->where('stock', '>', 0);
+            }], 'price')
+
+            ->with(['variants', 'category'])
+
             ->when($request->search, function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
             });
 
-        // 🆕 3 DATA TERBARU (hanya jika tidak search)
         $latestProducts = null;
 
         if (!$request->search) {
@@ -73,7 +84,6 @@ class ProductController extends Controller
                 ->get();
         }
 
-        // 📦 PAGINATED DATA
         $products = (clone $baseQuery)
             ->latest()
             ->paginate(12)
@@ -84,6 +94,44 @@ class ProductController extends Controller
             'navlink' => 'produk',
             'latestProducts' => $latestProducts,
             'products' => $products,
+        ]);
+    }
+
+    public function show($categorySlug, $productSlug)
+    {
+        $product = ProductModel::query()
+            ->where('is_active', true)
+
+            // Pastikan kategori cocok
+            ->whereHas('category', function ($q) use ($categorySlug) {
+                $q->where('slug', $categorySlug);
+            })
+
+            // 🔥 WAJIB punya variant dengan stock > 0
+            ->whereHas('variants', function ($q) {
+                $q->where('stock', '>', 0);
+            })
+
+            // Load hanya variant yg stock > 0
+            ->with([
+                'category',
+                'variants' => function ($q) {
+                    $q->where('stock', '>', 0);
+                }
+            ])
+
+            // Ambil lowest price dari yg stock > 0
+            ->withMin(['variants' => function ($q) {
+                $q->where('stock', '>', 0);
+            }], 'price')
+
+            ->where('slug', $productSlug)
+            ->firstOrFail();
+
+        return view('customer.detail-product', [
+            'title' => 'Detail | Fashion & Lifestyle',
+            'navlink' => 'Detail',
+            'product' => $product,
         ]);
     }
 }

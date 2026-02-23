@@ -89,14 +89,15 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
 
     $user = User::findOrFail($id);
 
-    Auth::login($user);
-
     if (! $user->hasVerifiedEmail()) {
         $user->markEmailAsVerified();
     }
 
-    return redirect()->route('customer.dashboard')
-        ->with('success', 'Email berhasil diverifikasi 🎉');
+    // ❌ JANGAN LOGIN DI SINI
+    // ❌ JANGAN MASUK DASHBOARD
+
+    return redirect()->route('login')
+        ->with('success', 'Email berhasil diverifikasi 🎉 Silakan login.');
 })->middleware('signed')->name('verification.verify');
 
 
@@ -122,6 +123,8 @@ Route::middleware(['auth', 'customer'])
 
         Route::get('/product', [ProductController::class, 'productsCustomer'])
             ->name('product');
+        Route::get('/produk/{category}/{product}', [ProductController::class, 'show'])
+            ->name('detail.produk');
 
         Route::get('/profile', [ProfileController::class, 'index'])
             ->name('profile');
@@ -132,6 +135,19 @@ Route::middleware(['auth', 'customer'])
         Route::get('/orders', [OrderController::class, 'index'])
             ->name('orders');
 
+        Route::get('/orders/{order}', [OrderController::class, 'show'])
+            ->name('orders.show');
+
+        Route::post(
+            '/orders/{order}/upload-proof',
+            [OrderController::class, 'uploadProof']
+        )->name('orders.upload');
+
+        Route::get('/laporan-saya', [LaporanController::class, 'index'])
+            ->name('customer.laporan');
+
+        Route::get('/laporan-saya/export', [LaporanController::class, 'export'])
+            ->name('laporan.export');
         /*
         |--------------------------------------------------------------------------
         | CUSTOMER CART
@@ -154,13 +170,13 @@ Route::middleware(['auth', 'customer'])
                     ->name('remove');
             });
 
-        /*
-        |--------------------------------------------------------------------------
-        | CHECKOUT (verified only)
-        |--------------------------------------------------------------------------
-        */
+        // ✅ CHECKOUT (HARUS DI LUAR CART)
         Route::middleware('verified')->group(function () {
+
             Route::get('/checkout', [CheckoutController::class, 'index'])
                 ->name('checkout');
+
+            Route::post('/checkout', [CheckoutController::class, 'store'])
+                ->name('checkout.store');
         });
     });

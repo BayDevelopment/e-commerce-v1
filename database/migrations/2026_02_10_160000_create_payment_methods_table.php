@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('account_number')->nullable();
             $table->string('account_name')->nullable();
             $table->boolean('is_active')->default(true);
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

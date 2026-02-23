@@ -23,47 +23,39 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        // 🔥 AMBIL SESSION GUEST SEBELUM LOGIN
+        $oldSessionId = $request->session()->getId();
+
         if (!Auth::attempt($request->only('email', 'password'))) {
             return back()->withErrors([
                 'email' => 'Email atau password salah.',
             ])->withInput();
         }
 
-        $oldSessionId = $request->session()->getId();
-
-        $request->session()->regenerate();
-
         $user = Auth::user();
 
         if (is_null($user->email_verified_at)) {
             Auth::logout();
             return redirect()->route('login')->withErrors([
-                'email' => 'Akun belum diverifikasi. Silakan cek email Anda.',
+                'email' => 'Akun belum diverifikasi.',
             ]);
         }
 
-        // 🔄 Merge cart
+        // Regenerate session setelah login sukses
+        $request->session()->regenerate();
+
+        // 🔄 Merge cart pakai session guest yang benar
         $this->mergeCartAfterLogin($oldSessionId);
 
-        // 🔥 CEK ADA REDIRECT ATAU TIDAK
-        if ($request->has('redirect')) {
-            return redirect($request->redirect)
-                ->with('success', 'Login berhasil 👋');
-        }
-
-        if ($user->role === 'admin') {
-            return redirect('/admin')
-                ->with('success', 'Login berhasil sebagai Admin 👋');
-        }
-
         return redirect()->route('customer.dashboard')
-            ->with('success', 'Login berhasil. Selamat datang kembali 👋');
+            ->with('success', 'Login berhasil 👋');
     }
-
 
     private function mergeCartAfterLogin($oldSessionId)
     {
-        $guestCart = \App\Models\CartModel::where('session_id', $oldSessionId)->first();
+        $guestCart = \App\Models\CartModel::with('items')
+            ->where('session_id', $oldSessionId)
+            ->first();
 
         if (!$guestCart) {
             return;
@@ -71,8 +63,9 @@ class AuthController extends Controller
 
         $userId = Auth::id();
 
-        // Cek apakah user sudah punya cart
-        $userCart = \App\Models\CartModel::where('user_id', $userId)->first();
+        $userCart = \App\Models\CartModel::with('items')
+            ->where('user_id', $userId)
+            ->first();
 
         if ($userCart) {
 
@@ -92,20 +85,15 @@ class AuthController extends Controller
                 }
             }
 
-            // Hapus cart guest setelah merge
             $guestCart->delete();
         } else {
 
-            // Kalau user belum punya cart → jadikan cart guest milik user
             $guestCart->update([
                 'user_id' => $userId,
                 'session_id' => null
             ]);
         }
     }
-
-
-
 
     // REGISTER
     public function register()

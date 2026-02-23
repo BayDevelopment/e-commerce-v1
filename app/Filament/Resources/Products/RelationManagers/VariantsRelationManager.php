@@ -118,33 +118,28 @@ class VariantsRelationManager extends RelationManager
                     ->label('Tambah Variant')
                     ->icon('heroicon-o-plus')
 
-                    // Tombol Simpan
+                    // Tombol Simpan jadi hijau
                     ->modalSubmitAction(
-                        fn($action) =>
-                        $action
+                        fn($action) => $action
                             ->label('Simpan Variant')
                             ->icon('heroicon-o-check-circle')
-                            ->color('primary')
+                            ->color('success')
                     )
 
-                    // Matikan default create another
-                    ->createAnother(false)
+                    // Notifikasi sukses custom (AMAN SEMUA VERSI)
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Berhasil')
+                            ->body('Data berhasil ditambahkan.')
+                            ->success()
+                    )
 
-                    // Tambahkan tombol custom Create Another
-                    ->extraModalFooterActions([
-                        Action::make('createAnother')
-                            ->label('Simpan & Tambah Lagi')
-                            ->icon('heroicon-o-plus-circle')
-                            ->color('success')
-                            ->action(function ($livewire) {
-                                $livewire->createAnother();
-                            }),
-                    ])
+                    // Aktifkan create another
+                    ->createAnother()
 
                     // Tombol Cancel
                     ->modalCancelAction(
-                        fn($action) =>
-                        $action
+                        fn($action) => $action
                             ->label('Batal')
                             ->icon('heroicon-o-x-mark')
                             ->color('gray')
@@ -166,12 +161,7 @@ class VariantsRelationManager extends RelationManager
                         ->requiresConfirmation()
                         ->modalHeading('Hapus Variant?')
                         ->modalDescription('Data akan dipindahkan ke trash.')
-                        ->successNotification(
-                            Notification::make()
-                                ->title('Berhasil')
-                                ->body('Data berhasil dipindahkan ke trash.')
-                                ->success()
-                        )
+                        ->successNotificationTitle('Data berhasil dipindahkan ke trash.')
                         ->visible(fn($record) => ! $record->trashed()),
 
                     RestoreAction::make()
@@ -181,6 +171,7 @@ class VariantsRelationManager extends RelationManager
                         ->requiresConfirmation()
                         ->modalHeading('Restore Variant?')
                         ->modalDescription('Data akan dikembalikan.')
+                        ->successNotificationTitle('Data berhasil direstore.')
                         ->visible(fn($record) => $record->trashed()),
 
                     ForceDeleteAction::make()
@@ -190,6 +181,7 @@ class VariantsRelationManager extends RelationManager
                         ->requiresConfirmation()
                         ->modalHeading('Hapus Permanen?')
                         ->modalDescription('Data akan dihapus permanen dan tidak bisa dikembalikan.')
+                        ->successNotificationTitle('Data berhasil dihapus permanen.')
                         ->visible(fn($record) => $record->trashed()),
                 ])
                     ->label('Aksi')

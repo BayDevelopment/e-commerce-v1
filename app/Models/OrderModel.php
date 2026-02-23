@@ -4,15 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderModel extends Model
 {
-    use HasFactory;
-
+    use HasFactory, SoftDeletes;
+    protected $table = 'orders';
     protected $fillable = [
         'user_id',
         'payment_method_id',
         'total_price',
+
+        // snapshot bank
+        'bank_name',
+        'bank_account_number',
+        'bank_account_name',
+
+        'payment_proof',
         'payment_status',
         'status',
     ];
@@ -28,7 +36,7 @@ class OrderModel extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItemModel::class);
+        return $this->hasMany(OrderItemModel::class, 'order_id');
     }
 
     public function paymentMethod()

@@ -86,13 +86,18 @@
                                 {{ \Illuminate\Support\Str::limit($product->description ?? '-', 60) }}
                             </p>
 
+                            @php
+                                $hasVariant = $product->variants->isNotEmpty();
+                                $lowestPrice = $product->variants->min('price');
+                            @endphp
+
                             <div class="mt-auto d-flex justify-content-between align-items-center">
 
                                 <div class="fw-bold text-white">
-                                    Rp {{ number_format($product->lowest_price ?? 0, 0, ',', '.') }}
+                                    Rp {{ number_format($lowestPrice ?? 0, 0, ',', '.') }}
                                 </div>
 
-                                @if ($firstVariant)
+                                @if ($hasVariant)
                                     <a href="{{ route('products.detail', [
                                         'category' => $product->category->slug,
                                         'product' => $product->slug,
@@ -105,7 +110,6 @@
                                         <i class="fa-solid fa-ban"></i>
                                     </button>
                                 @endif
-
 
                             </div>
 

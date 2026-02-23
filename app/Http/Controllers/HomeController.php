@@ -10,16 +10,16 @@ class HomeController extends Controller
     public function index()
     {
         $products = ProductModel::where('is_active', true)
-            ->latest()       // urut berdasarkan created_at desc
-            ->take(3)        // ambil 3 data saja
+            ->with(['variants', 'category']) // pastikan variants & category diload
+            ->latest()
+            ->take(3)
             ->get();
 
-        $data = [
+        return view('pages.home', [
             'title' => 'Trendora | Fashion & Lifestyle',
             'navlink' => 'beranda',
             'products' => $products,
-        ];
-        return view('pages.home', $data);
+        ]);
     }
 
     public function show($categorySlug, $productSlug)
@@ -29,6 +29,7 @@ class HomeController extends Controller
             ->whereHas('category', function ($q) use ($categorySlug) {
                 $q->where('slug', $categorySlug);
             })
+            ->whereHas('variants') // 🔥 BLOCK jika tidak punya variant
             ->firstOrFail();
 
         return view('pages.detail-product', [

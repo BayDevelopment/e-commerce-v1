@@ -34,6 +34,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'process', 'done', 'cancel'])
                 ->default('pending');
 
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index(['user_id', 'status']);
