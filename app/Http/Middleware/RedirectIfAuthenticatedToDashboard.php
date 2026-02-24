@@ -21,7 +21,7 @@ class RedirectIfAuthenticatedToDashboard
             $user = Auth::user();
 
             if ($user->role === 'admin') {
-                return redirect('/admin/dashboard');
+                return redirect('/admin');
             }
 
             if ($user->role === 'customer') {
