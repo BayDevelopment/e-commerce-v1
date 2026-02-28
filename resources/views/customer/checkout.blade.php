@@ -6,9 +6,15 @@
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="checkout-title">Checkout</h3>
-                <a href="{{ route('customer.cart.index') }}" class="btn btn-back">
-                    ← Kembali ke Keranjang
-                </a>
+                @if (isset($isBuyNow) && $isBuyNow)
+                    <a href="{{ url()->previous() }}" class="btn btn-back">
+                        ← Kembali ke Produk
+                    </a>
+                @else
+                    <a href="{{ route('customer.cart.index') }}" class="btn btn-back">
+                        ← Kembali ke Keranjang
+                    </a>
+                @endif
             </div>
 
             @if ($errors->any())
@@ -21,21 +27,28 @@
                 </div>
             @endif
 
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="row g-4">
 
-                {{-- LEFT --}}
+                {{-- ================= LEFT ================= --}}
                 <div class="col-lg-8">
                     <div class="glass-card p-4">
 
                         <h5 class="section-title mb-4">Ringkasan Item</h5>
 
-                        @foreach ($cart->items as $item)
+                        @if (isset($isBuyNow) && $isBuyNow)
                             @php
-                                $variant = $item->variant;
+                                $variant = $buyNowItem->variant;
                                 $product = $variant?->product;
                                 $img = is_array($product?->image) && count($product->image) ? $product->image[0] : null;
+
                                 $price = (int) ($variant?->price ?? 0);
-                                $qty = (int) ($item->qty ?? 0);
+                                $qty = (int) ($buyNowItem->qty ?? 0);
                                 $subtotal = $price * $qty;
                             @endphp
 
@@ -65,7 +78,49 @@
                                 </div>
 
                             </div>
-                        @endforeach
+                        @else
+                            @foreach ($cart->items as $item)
+                                @php
+                                    $variant = $item->variant;
+                                    $product = $variant?->product;
+                                    $img =
+                                        is_array($product?->image) && count($product->image)
+                                            ? $product->image[0]
+                                            : null;
+
+                                    $price = (int) ($variant?->price ?? 0);
+                                    $qty = (int) ($item->qty ?? 0);
+                                    $subtotal = $price * $qty;
+                                @endphp
+
+                                <div class="checkout-item">
+
+                                    <div class="item-img">
+                                        <img src="{{ $img ? asset('storage/' . $img) : asset('images/no-image.png') }}">
+                                    </div>
+
+                                    <div class="item-info">
+                                        <div class="item-name">
+                                            {{ $product?->name ?? '-' }}
+                                        </div>
+
+                                        <div class="item-variant">
+                                            {{ $variant?->color ?? '-' }}
+                                            {{ $variant?->size ? ' • ' . $variant->size : '' }}
+                                        </div>
+
+                                        <div class="item-price">
+                                            Rp {{ number_format($price, 0, ',', '.') }} × {{ $qty }}
+                                        </div>
+                                    </div>
+
+                                    <div class="item-subtotal">
+                                        Rp {{ number_format($subtotal, 0, ',', '.') }}
+                                    </div>
+
+                                </div>
+                            @endforeach
+                        @endif
 
                         <div class="checkout-total">
                             <span>Total</span>
@@ -75,17 +130,58 @@
                     </div>
                 </div>
 
-                {{-- RIGHT --}}
+
+                {{-- ================= RIGHT ================= --}}
                 <div class="col-lg-4">
-                    <form method="POST" action="{{ route('customer.checkout.store') }}">
+
+                    <form action="{{ route('customer.checkout.store') }}" method="POST">
                         @csrf
+
+                        @if (isset($isBuyNow) && $isBuyNow)
+                            <input type="hidden" name="variant_id" value="{{ $buyNowItem->variant->id }}">
+                            <input type="hidden" name="qty" value="{{ $buyNowItem->qty }}">
+                        @endif
 
                         <div class="glass-card p-4">
 
-                            <h5 class="section-title mb-4">Metode Pembayaran</h5>
+                            {{-- ===== PILIH CABANG ===== --}}
+                            <h5 class="section-title mb-3">Pilih Cabang</h5>
+
+                            <input type="text" id="branchSearch" class="form-control checkout-textarea mb-3"
+                                placeholder="Cari cabang (nama atau alamat)...">
+
+                            <div id="branchContainer" class="branch-scroll">
+
+                                @foreach ($branches as $branch)
+                                    <label class="payment-option branch-item" data-name="{{ strtolower($branch->name) }}"
+                                        data-address="{{ strtolower($branch->address) }}">
+
+                                        <input type="radio" name="branch_id" value="{{ $branch->id }}" required>
+
+                                        <div class="payment-content">
+
+                                            <div class="payment-title">
+                                                {{ $branch->name }}
+                                            </div>
+
+                                            <div class="payment-desc">
+                                                {{ $branch->address ?? 'Alamat tidak tersedia' }}
+                                            </div>
+
+                                        </div>
+
+                                    </label>
+                                @endforeach
+
+                            </div>
+
+
+                            {{-- ===== PILIH PEMBAYARAN ===== --}}
+                            <h5 class="section-title mt-4 mb-3">Metode Pembayaran</h5>
 
                             @foreach ($paymentMethods as $pm)
                                 <label class="payment-option">
+
                                     <input type="radio" name="payment_method_id" value="{{ $pm->id }}" required>
 
                                     <div class="payment-content">
@@ -98,22 +194,30 @@
                                             • a.n {{ $pm->account_name }}
                                         </div>
                                     </div>
+
                                 </label>
                             @endforeach
 
+
+                            {{-- CATATAN --}}
                             <div class="mt-4">
                                 <label class="form-label text-secondary small">
                                     Catatan (opsional)
                                 </label>
+
                                 <textarea name="note" rows="3" class="form-control checkout-textarea"
                                     placeholder="Contoh: warna sesuai foto ya...">{{ old('note') }}</textarea>
                             </div>
 
+
+                            {{-- TOTAL --}}
                             <div class="checkout-summary mt-4">
                                 <span>Total</span>
                                 <strong>Rp {{ number_format($total, 0, ',', '.') }}</strong>
                             </div>
 
+
+                            {{-- BUTTON --}}
                             <button type="submit" class="btn btn-modern w-100 mt-3">
                                 <i class="fa-solid fa-lock"></i>
                                 Buat Pesanan
@@ -125,8 +229,8 @@
 
                         </div>
                     </form>
-                </div>
 
+                </div>
             </div>
         </div>
     </section>
@@ -302,5 +406,72 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(99, 102, 241, .4);
         }
+
+        /* Scroll area cabang */
+        .branch-scroll {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        /* Scrollbar styling */
+        .branch-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .branch-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .2);
+            border-radius: 10px;
+        }
+
+        /* Highlight saat dipilih */
+        .payment-option input:checked+.payment-content {
+            color: #6366f1;
+        }
+
+        .payment-option input:checked {
+            accent-color: #6366f1;
+        }
     </style>
+@endsection
+
+@section('scripts')
+    <script>
+        function toggleBranchSearch() {
+            let box = document.getElementById('branch-search-box');
+            box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const searchInput = document.getElementById('branchSearch');
+
+            if (!searchInput) return;
+
+            searchInput.addEventListener('keyup', function() {
+
+                const keyword = this.value.toLowerCase().trim();
+
+                const branches = document.querySelectorAll('.branch-item');
+
+                branches.forEach(function(item) {
+
+                    const name = item.dataset.name;
+                    const address = item.dataset.address;
+
+                    if (
+                        name.includes(keyword) ||
+                        address.includes(keyword)
+                    ) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+
+                });
+
+            });
+
+        });
+    </script>
 @endsection

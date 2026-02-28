@@ -44,13 +44,6 @@ Route::prefix('cart')
             ->name('cart.remove');
     });
 
-
-Route::post('/buy-now', [CheckoutController::class, 'buyNow'])
-    ->middleware('auth')
-    ->name('buy.now');
-
-
-
 /*
 |--------------------------------------------------------------------------
 | AUTH ROUTES (Guest Only)
@@ -126,8 +119,8 @@ Route::middleware(['auth', 'customer'])
         Route::get('/produk/{category}/{product}', [ProductController::class, 'show'])
             ->name('detail.produk');
 
-        Route::get('/profile', [ProfileController::class, 'index'])
-            ->name('profile');
+        Route::get('/profile', [ProfileController::class, 'profile'])->name('profile');
+        Route::post('/profile', [ProfileController::class, 'updateProfile'])->name('profile.update');
 
         Route::get('/laporan', [LaporanController::class, 'index'])
             ->name('laporan');
@@ -171,12 +164,18 @@ Route::middleware(['auth', 'customer'])
             });
 
         // ✅ CHECKOUT (HARUS DI LUAR CART)
-        Route::middleware('verified')->group(function () {
+        // Group untuk user yang sudah login & verified
+        Route::middleware(['auth', 'verified'])->group(function () {
 
+            // Checkout normal (dari keranjang)
             Route::get('/checkout', [CheckoutController::class, 'index'])
                 ->name('checkout');
 
             Route::post('/checkout', [CheckoutController::class, 'store'])
                 ->name('checkout.store');
+
+            // Beli Sekarang langsung (opsional, kalau mau pisah logic)
+            Route::post('/buy-now', [CheckoutController::class, 'buyNow'])
+                ->name('buy.now');
         });
     });

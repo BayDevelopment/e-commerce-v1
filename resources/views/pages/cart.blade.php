@@ -25,10 +25,32 @@
 
                                         {{-- IMAGE --}}
                                         <div class="td-cart-img">
-                                            <img src="{{ $item->variant->product->image && count($item->variant->product->image)
-                                                ? asset('storage/' . $item->variant->product->image[0])
-                                                : asset('images/no-image.png') }}"
-                                                alt="{{ $item->variant->product->name }}">
+                                            @php
+                                                $product = $item->variant?->product ?? null;
+                                                $imageUrl = asset('images/no-image.png'); // default fallback
+
+                                                if ($product && $product->image) {
+                                                    $images = $product->image; // sekarang sudah array karena $casts
+
+                                                    if (is_array($images) && !empty($images[0])) {
+                                                        $firstImage = $images[0];
+
+                                                        // Tambah prefix 'storage/' kalau belum ada (aman kalau path di DB beda format)
+                                                        if (
+                                                            !Str::startsWith($firstImage, 'storage/') &&
+                                                            !Str::startsWith($firstImage, '/storage/')
+                                                        ) {
+                                                            $firstImage = 'storage/' . $firstImage;
+                                                        }
+
+                                                        $imageUrl = asset($firstImage);
+                                                    }
+                                                }
+                                            @endphp
+
+                                            <img src="{{ $imageUrl }}" alt="{{ $product?->name ?? 'Produk' }}"
+                                                class="img-fluid rounded-3" loading="lazy"
+                                                onerror="this.src='{{ asset('images/no-image.png') }}'; this.onerror=null;">
                                         </div>
 
                                         {{-- INFO --}}
@@ -70,17 +92,22 @@
                                     </div>
 
                                     {{-- RIGHT SECTION (SUBTOTAL + DELETE) --}}
-                                    <div class="d-flex flex-column align-items-end justify-content-between gap-3">
+                                    <div
+                                        class="d-flex flex-row flex-sm-column align-items-center align-items-sm-end justify-content-between gap-3 mt-3 mt-sm-0">
 
-                                        <div class="fw-bold fs-5 text-white cart-subtotal"
+                                        <!-- Subtotal -->
+                                        <div class="fw-bold fs-5 text-white cart-subtotal text-nowrap me-3 me-sm-0"
                                             data-subtotal="{{ $subtotal }}">
                                             Rp {{ number_format($subtotal, 0, ',', '.') }}
                                         </div>
 
-                                        <button type="button" class="td-delete btn-remove" data-id="{{ $item->id }}">
-                                            <i class="fa-solid fa-trash"></i>
+                                        <!-- Tombol Hapus (diperbesar & lebih mudah ditekan di mobile) -->
+                                        <button type="button"
+                                            class="td-delete btn-remove rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                                            data-id="{{ $item->id }}"
+                                            style="width: 42px; height: 42px; min-width: 42px;">
+                                            <i class="fa-solid fa-trash-can"></i>
                                         </button>
-
                                     </div>
 
                                 </div>
@@ -185,6 +212,131 @@
         .td-delete:hover {
             background: #ef4444;
             color: #fff;
+        }
+
+        /* Perbaikan untuk mobile */
+        .td-cart-card {
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, .08);
+            transition: all .25s ease;
+        }
+
+        .td-cart-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, .3);
+        }
+
+        /* Gambar lebih besar di mobile */
+        .td-cart-img {
+            width: 90px;
+            height: 90px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e1b4b, #0f172a);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, .4);
+        }
+
+        .td-cart-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .4s ease;
+        }
+
+        .td-cart-card:hover .td-cart-img img {
+            transform: scale(1.08);
+        }
+
+        /* Qty Control lebih besar & mudah ditekan */
+        .td-qty-control {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, .08);
+            border-radius: 50px;
+            padding: 6px 8px;
+            gap: 8px;
+        }
+
+        .td-qty-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+            border-radius: 50%;
+            transition: .2s;
+        }
+
+        .td-qty-btn:hover {
+            background: rgba(255, 255, 255, .15);
+        }
+
+        .cart-qty {
+            width: 60px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        /* Tombol hapus lebih besar & mudah ditekan */
+        .td-delete {
+            background: rgba(239, 68, 68, .2);
+            border: none;
+            color: #ef4444;
+            width: 42px;
+            height: 42px;
+            font-size: 1.2rem;
+            border-radius: 50%;
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, .2);
+        }
+
+        .td-delete:hover {
+            background: #ef4444;
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        /* Ringkasan belanja di mobile jadi fixed bottom */
+        @media (max-width: 991px) {
+            .summary-card {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 20px 20px 0 0;
+                z-index: 1000;
+                box-shadow: 0 -10px 30px rgba(0, 0, 0, .6);
+                padding: 16px;
+                background: rgba(15, 23, 42, .95);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid rgba(255, 255, 255, .1);
+            }
+
+            .summary-card .btn-td {
+                padding: 14px;
+                font-size: 1.1rem;
+            }
+
+            .td-cart-card {
+                margin-bottom: 1.5rem !important;
+            }
+
+            .td-cart-img {
+                width: 80px;
+                height: 80px;
+            }
         }
     </style>
 @endsection

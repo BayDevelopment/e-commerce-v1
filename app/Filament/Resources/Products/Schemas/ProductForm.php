@@ -12,6 +12,10 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+// intervention image
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\Storage;
 
 class ProductForm
 {
@@ -84,13 +88,29 @@ class ProductForm
                             ->disk('public')
                             ->directory('products')
                             ->reorderable()
-                            ->imagePreviewHeight('120')
                             ->maxFiles(3)
                             ->acceptedFileTypes(['image/jpeg'])
                             ->maxSize(1024)
-                            ->helperText('Hanya file JPG dengan ukuran maksimal 1MB.')
-                            ->columnSpanFull(),
+                            ->saveUploadedFileUsing(function ($file) {
 
+                                $manager = new ImageManager(new Driver());
+
+                                $image = $manager->read($file->getRealPath());
+
+                                // resize height = 480, width auto
+                                $image->scale(height: 480);
+
+                                $filename = Str::uuid() . '.jpg';
+
+                                Storage::disk('public')->put(
+                                    'products/' . $filename,
+                                    $image->toJpeg(85)
+                                );
+
+                                return 'products/' . $filename;
+                            })
+                            ->helperText('Tinggi gambar otomatis diubah menjadi 480px')
+                            ->columnSpanFull(),
                         Toggle::make('is_active')
                             ->label('Aktifkan Produk')
                             ->default(true)

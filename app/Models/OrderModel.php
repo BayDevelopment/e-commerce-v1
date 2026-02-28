@@ -12,14 +12,12 @@ class OrderModel extends Model
     protected $table = 'orders';
     protected $fillable = [
         'user_id',
+        'branch_id', // 🔥 tambahin ini
         'payment_method_id',
         'total_price',
-
-        // snapshot bank
         'bank_name',
         'bank_account_number',
         'bank_account_name',
-
         'payment_proof',
         'payment_status',
         'status',
@@ -42,5 +40,9 @@ class OrderModel extends Model
     public function paymentMethod()
     {
         return $this->belongsTo(PayMethodModel::class);
+    }
+    public function branch()
+    {
+        return $this->belongsTo(BranchModel::class, 'branch_id');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoryModel;
 use App\Models\ProductModel;
 use Illuminate\Http\Request;
 
@@ -10,15 +11,23 @@ class HomeController extends Controller
     public function index()
     {
         $products = ProductModel::where('is_active', true)
-            ->with(['variants', 'category']) // pastikan variants & category diload
+            ->with(['variants', 'category'])
             ->latest()
             ->take(3)
             ->get();
+
+        // total produk aktif
+        $totalProducts = ProductModel::where('is_active', true)->count();
+
+        // total kategori aktif
+        $totalCategories = CategoryModel::where('is_active', true)->count();
 
         return view('pages.home', [
             'title' => 'Trendora | Fashion & Lifestyle',
             'navlink' => 'beranda',
             'products' => $products,
+            'totalProducts' => $totalProducts,
+            'totalCategories' => $totalCategories,
         ]);
     }
 

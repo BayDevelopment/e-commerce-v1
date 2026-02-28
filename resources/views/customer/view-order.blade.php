@@ -13,7 +13,7 @@
             </div>
 
             {{-- ORDER HEADER --}}
-            <div class="glass-card mb-4">
+            <div class="glass-card order-header-card mb-4">
 
                 @php
                     $statusColor = match ($order->status) {
@@ -23,27 +23,119 @@
                         'cancel' => 'badge-cancel',
                         default => 'badge-default',
                     };
+
+                    $paymentColor = match ($order->payment_status) {
+                        'pending' => 'badge-pending',
+                        'paid' => 'badge-done',
+                        'rejected' => 'badge-cancel',
+                        default => 'badge-default',
+                    };
+
+                    $statusText = match ($order->status) {
+                        'pending' => 'Pesanan Menunggu Konfirmasi',
+                        'process' => 'Pesanan Sedang Diproses',
+                        'done' => 'Pesanan Selesai',
+                        'cancel' => 'Pesanan Dibatalkan',
+                        default => ucfirst($order->status),
+                    };
+
+                    $statusDescription = match ($order->status) {
+                        'pending' => 'Pesanan kamu sudah dibuat dan sedang menunggu konfirmasi dari toko.',
+                        'process' => 'Pesanan kamu sedang disiapkan oleh toko.',
+                        'done' => 'Pesanan sudah selesai dan berhasil diterima.',
+                        'cancel' => 'Pesanan dibatalkan oleh sistem atau toko.',
+                        default => '',
+                    };
+
+                    $paymentText = match ($order->payment_status) {
+                        'pending' => 'Pembayaran Menunggu Verifikasi',
+                        'paid' => 'Pembayaran Berhasil',
+                        'rejected' => 'Pembayaran Ditolak',
+                        default => ucfirst($order->payment_status),
+                    };
                 @endphp
 
                 <div class="order-header">
-                    <div>
-                        <h4 class="order-title">
-                            Order #{{ $order->id }}
-                        </h4>
-                        <div class="order-date">
-                            {{ $order->created_at->format('d M Y H:i') }}
-                        </div>
-                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
 
-                    <span class="order-badge {{ $statusColor }}">
-                        {{ ucfirst($order->status) }}
-                    </span>
+                        <!-- LEFT -->
+                        <div>
+                            <div class="order-id">
+                                Order #{{ $order->id }}
+                            </div>
+
+                            <div class="order-date">
+                                {{ $order->created_at->format('d M Y • H:i') }}
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+
+                                <span class="badge-modern {{ $statusColor }}">
+                                    <i class="fa-solid fa-box"></i>
+                                    {{ $statusText }}
+                                </span>
+
+                                <span class="badge-modern {{ $paymentColor }}">
+                                    <i class="fa-solid fa-credit-card"></i>
+                                    {{ $paymentText }}
+                                </span>
+
+                            </div>
+
+                            @if ($statusDescription)
+                                <div class="order-description">
+                                    {{ $statusDescription }}
+                                </div>
+                            @endif
+                        </div>
+
+                    </div>
                 </div>
+                @switch($order->status)
+                    @case('process')
+                        <div class="order-info-box info-process">
+                            Silahkan datangi toko terdekat, tunjukan bukti, dan ambil pesanan anda.
+                        </div>
+                    @break
+
+                    @case('done')
+                        <div class="order-info-box info-done">
+                            Terimakasih sudah belanja ditoko kami dengan aplikasi ini, semoga harimu menyenangkan 🎉
+                        </div>
+                    @break
+                @endswitch
 
                 <div class="order-meta mt-3">
                     <span>Metode Pembayaran:</span>
                     <strong>{{ $order->paymentMethod->name ?? '-' }}</strong>
                 </div>
+
+                @if ($order->branch)
+                    <div class="branch-card mt-4">
+
+                        <div class="branch-header">
+                            <i class="fa-solid fa-store"></i>
+                            <span>Cabang Pengambilan</span>
+                        </div>
+
+                        <div class="branch-name">
+                            {{ $order->branch->name }}
+                        </div>
+
+                        <div class="branch-address">
+                            {{ $order->branch->address ?? 'Alamat tidak tersedia' }}
+                        </div>
+
+                        @if ($order->branch->latitude && $order->branch->longitude)
+                            <a href="https://www.google.com/maps?q={{ $order->branch->latitude }},{{ $order->branch->longitude }}"
+                                target="_blank" class="btn-map">
+                                <i class="fa-solid fa-location-dot"></i>
+                                Lihat Lokasi di Maps
+                            </a>
+                        @endif
+
+                    </div>
+                @endif
 
             </div>
 
@@ -89,43 +181,120 @@
                     </div>
 
                     {{-- UPLOAD --}}
-                    <form method="POST" action="{{ route('customer.orders.upload', $order->id) }}"
-                        enctype="multipart/form-data" class="upload-box mt-4">
-                        @csrf
+                    @if ($order->payment_status === 'pending' && !$order->payment_proof)
+                        {{-- FORM UPLOAD --}}
+                        <form method="POST" action="{{ route('customer.orders.upload', $order->id) }}"
+                            enctype="multipart/form-data" class="upload-box mt-4">
 
-                        <div class="upload-title">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Upload Bukti Transfer</span>
+                            @csrf
+
+                            <div class="file-upload-wrapper">
+
+                                <input type="file" name="payment_proof" id="paymentProof-{{ $order->id }}"
+                                    class="file-input" accept="image/*" required>
+
+                                <label for="paymentProof-{{ $order->id }}" class="file-label">
+
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                                    <span class="file-name-text">
+                                        Pilih Bukti Transfer
+                                    </span>
+
+                                </label>
+
+                            </div>
+
+                            <button type="submit" class="btn-primary mt-3 w-100">
+
+                                <i class="fa-solid fa-paper-plane"></i>
+
+                                Upload Bukti Transfer
+
+                            </button>
+
+                        </form>
+                    @else
+                        {{-- STATUS SUDAH UPLOAD --}}
+                        <div class="upload-success-box mt-4">
+
+                            <div class="upload-success-left">
+
+                                <div class="upload-success-icon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+
+                            </div>
+
+                            <div class="upload-success-content">
+
+                                <div class="upload-success-title">
+                                    Bukti transfer telah diupload
+                                </div>
+
+                                <div class="upload-success-desc">
+
+                                    @if ($order->payment_status === 'waiting_confirmation')
+                                        Sedang diverifikasi oleh admin. Proses ini biasanya memakan waktu beberapa menit.
+                                    @elseif ($order->payment_status === 'confirmed')
+                                        Pembayaran berhasil dikonfirmasi. Pesanan sedang diproses.
+                                    @elseif ($order->payment_status === 'rejected')
+                                        Bukti transfer ditolak. Silakan upload ulang bukti yang valid.
+                                    @else
+                                        Bukti transfer telah diterima.
+                                    @endif
+
+                                </div>
+
+                                {{-- preview --}}
+                                @if ($order->payment_proof)
+                                    <a href="{{ asset('storage/' . $order->payment_proof) }}" target="_blank"
+                                        class="btn-preview-proof mt-2">
+
+                                        <i class="fa-solid fa-image"></i>
+                                        Lihat Bukti Transfer
+
+                                    </a>
+                                @endif
+
+                            </div>
+
+                            <div class="upload-success-badge">
+
+                                @switch($order->payment_status)
+                                    @case('waiting_confirmation')
+                                        <span class="badge badge-warning">
+                                            <i class="fa-solid fa-clock"></i>
+                                            Verifikasi
+                                        </span>
+                                    @break
+
+                                    @case('confirmed')
+                                        <span class="badge badge-success">
+                                            <i class="fa-solid fa-check"></i>
+                                            Dikonfirmasi
+                                        </span>
+                                    @break
+
+                                    @case('rejected')
+                                        <span class="badge badge-danger">
+                                            <i class="fa-solid fa-xmark"></i>
+                                            Ditolak
+                                        </span>
+                                    @break
+
+                                    @default
+                                        <span class="badge badge-info">
+                                            <i class="fa-solid fa-check"></i>
+                                            Uploaded
+                                        </span>
+                                @endswitch
+
+                            </div>
+
                         </div>
+                    @endif
 
-                        <div class="file-upload-wrapper">
-                            <input type="file" name="payment_proof" id="paymentProof-{{ $order->id }}"
-                                class="file-input" accept="image/*" required>
-
-                            <label for="paymentProof-{{ $order->id }}" class="file-label">
-                                <i class="fa-solid fa-image"></i>
-                                <span class="file-name-text">Pilih File Gambar</span>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn-primary mt-3 w-100">
-                            <i class="fa-solid fa-paper-plane"></i>
-                            Kirim Bukti
-                        </button>
-                    </form>
-
-                </div>
-            @endif
-
-
-            {{-- BUKTI --}}
-            @if ($order->payment_proof)
-                <div class="glass-card mb-4 text-center">
-                    <h6 class="section-title">
-                        <i class="fa-solid fa-image"></i>
-                        Bukti Transfer
-                    </h6>
-
-                    <img src="{{ asset('storage/' . $order->payment_proof) }}" class="payment-proof-img">
                 </div>
             @endif
 
@@ -137,37 +306,56 @@
                     Item Pesanan
                 </h6>
 
-                @foreach ($order->items as $item)
-                    <div class="item-row">
-                        <div class="item-info">
+                @forelse ($order->items as $item)
+                    <div class="item-card">
+
+                        <div class="item-left">
+
                             <div class="item-name">
                                 {{ $item->product_name }}
                             </div>
 
                             <div class="item-variant">
-                                {{ $item->variant_color }}
-                                {{ $item->variant_size ? '- ' . $item->variant_size : '' }}
+                                {{ $item->variant_color ?? '-' }}
+                                {{ $item->variant_size ? ' • ' . $item->variant_size : '' }}
                             </div>
 
-                            <div class="item-price">
+                            <div class="item-meta">
                                 Rp {{ number_format($item->price, 0, ',', '.') }}
                                 × {{ $item->quantity }}
                             </div>
+
                         </div>
 
-                        <div class="item-subtotal">
+
+                        <div class="item-right">
+
                             Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+
                         </div>
+
                     </div>
-                @endforeach
+
+                @empty
+
+                    <div class="empty-state">
+                        Tidak ada item
+                    </div>
+                @endforelse
 
                 <hr>
 
-                <div class="total-row">
-                    <span>Total</span>
-                    <strong>
+                <div class="total-card">
+
+                    <div class="total-label">
+                        Total Pembayaran
+                    </div>
+
+
+                    <div class="total-price">
                         Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                    </strong>
+                    </div>
+
                 </div>
 
             </div>
@@ -177,6 +365,58 @@
 @endsection
 @section('styles')
     <style>
+        /* ================= BRANCH CARD ================= */
+        .branch-card {
+            background: rgba(99, 102, 241, .08);
+            border: 1px solid rgba(99, 102, 241, .2);
+            padding: 18px;
+            border-radius: 16px;
+            margin-top: 15px;
+        }
+
+        .branch-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #a5b4fc;
+            margin-bottom: 8px;
+        }
+
+        .branch-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .branch-address {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+
+        .btn-map {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            transition: .25s ease;
+        }
+
+        .btn-map:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, .4);
+            color: #fff;
+        }
+
         .order-header {
             display: flex;
             justify-content: space-between;
@@ -471,6 +711,407 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(99, 102, 241, .4);
+        }
+
+        .order-info-box {
+            margin-top: 15px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .info-process {
+            background: rgba(59, 130, 246, .15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, .3);
+        }
+
+        .info-done {
+            background: rgba(34, 197, 94, .15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, .3);
+        }
+
+        .order-status-description {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #9ca3af;
+            max-width: 420px;
+        }
+
+        .order-badge {
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .order-header-card {
+            padding: 28px;
+        }
+
+        .order-id {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .order-date {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .order-description {
+            margin-top: 8px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .badge-modern {
+
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .branch-card {
+
+            background: rgba(255, 255, 255, .05);
+            padding: 18px;
+            border-radius: 14px;
+            min-width: 240px;
+        }
+
+        .branch-label {
+
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .branch-name {
+
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .branch-address {
+
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .btn-map-modern {
+
+            margin-top: 10px;
+            display: inline-flex;
+            gap: 6px;
+
+            background: #6366f1;
+            color: white;
+
+            padding: 6px 12px;
+            border-radius: 8px;
+
+            font-size: 12px;
+        }
+
+        .item-card {
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 18px;
+
+            border-radius: 14px;
+
+            background: rgba(255, 255, 255, .03);
+
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .item-variant {
+
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .item-meta {
+
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .item-right {
+
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .total-card {
+
+            margin-top: 20px;
+
+            padding: 20px;
+
+            border-radius: 14px;
+
+            background: rgba(99, 102, 241, .15);
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-price {
+
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* logika jika upload bukti terisi  */
+        .upload-success-box {
+
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            padding: 18px;
+
+            border-radius: 14px;
+
+            background: rgba(34, 197, 94, .08);
+            border: 1px solid rgba(34, 197, 94, .25);
+        }
+
+        .upload-success-icon {
+
+            font-size: 28px;
+            color: #22c55e;
+        }
+
+        .upload-success-title {
+
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .upload-success-desc {
+
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .upload-success-badge {
+
+            margin-left: auto;
+        }
+
+        .badge-warning {
+
+            background: rgba(251, 191, 36, .15);
+            color: #fbbf24;
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
+
+        .badge-success {
+
+            background: rgba(34, 197, 94, .15);
+            color: #22c55e;
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
+
+        .badge-info {
+
+            background: rgba(59, 130, 246, .15);
+            color: #60a5fa;
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
+
+        .upload-success-box {
+
+            display: flex;
+            gap: 16px;
+            align-items: center;
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            background: rgba(34, 197, 94, .06);
+            border: 1px solid rgba(34, 197, 94, .2);
+
+        }
+
+        .upload-success-icon {
+
+            font-size: 32px;
+            color: #22c55e;
+
+        }
+
+        .upload-success-title {
+
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .upload-success-desc {
+
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .upload-success-badge {
+
+            margin-left: auto;
+        }
+
+        .btn-preview-proof {
+
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            font-size: 13px;
+
+            color: #6366f1;
+
+            text-decoration: none;
+        }
+
+        .btn-preview-proof:hover {
+
+            color: #8b5cf6;
+        }
+
+        .badge {
+
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+        }
+
+        .badge-warning {
+            background: rgba(251, 191, 36, .15);
+            color: #fbbf24;
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, .15);
+            color: #22c55e;
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, .15);
+            color: #ef4444;
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, .15);
+            color: #60a5fa;
+        }
+
+        .total-card {
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 20px 24px;
+            margin-top: 24px;
+
+            border-radius: 18px;
+
+            background: linear-gradient(135deg,
+                    rgba(99, 102, 241, .15),
+                    rgba(139, 92, 246, .10));
+
+            border: 1px solid rgba(99, 102, 241, .25);
+
+            backdrop-filter: blur(10px);
+
+            transition: all .3s ease;
+
+        }
+
+        /* Hover effect */
+        .total-card:hover {
+
+            transform: translateY(-3px);
+
+            border-color: rgba(139, 92, 246, .45);
+
+            box-shadow:
+                0 10px 30px rgba(99, 102, 241, .25),
+                inset 0 0 0 1px rgba(255, 255, 255, .05);
+
+        }
+
+
+        /* Label */
+        .total-label {
+
+            font-size: 14px;
+            color: #94a3b8;
+
+            letter-spacing: .3px;
+
+        }
+
+
+        /* Price */
+        .total-price {
+
+            font-size: 24px;
+            font-weight: 700;
+
+            background: linear-gradient(135deg,
+                    #6366f1,
+                    #8b5cf6);
+
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+
+            letter-spacing: .5px;
+
+        }
+
+
+        /* Optional subtle glow */
+        .total-price::after {
+
+            content: "";
+            display: block;
+
+            height: 2px;
+            width: 100%;
+
+            margin-top: 4px;
+
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(139, 92, 246, .6),
+                    transparent);
+
+            opacity: .6;
+
         }
     </style>
 @endsection

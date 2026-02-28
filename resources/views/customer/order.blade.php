@@ -27,6 +27,10 @@
                         <div class="order-date">
                             {{ $order->created_at->format('d M Y H:i') }}
                         </div>
+                        <div class="order-branch">
+                            <i class="fa-solid fa-store branch-icon"></i>
+                            <span>{{ $order->branch->name ?? 'Tidak tersedia' }}</span>
+                        </div>
 
                         <span class="order-badge {{ $statusColor }}">
                             {{ ucfirst($order->status) }}
@@ -37,6 +41,7 @@
                         <div class="order-price">
                             Rp {{ number_format($order->total_price, 0, ',', '.') }}
                         </div>
+
 
                         <a href="{{ route('customer.orders.show', $order->id) }}"
                             class="btn-modern d-inline-flex align-items-center gap-2 text-decoration-none">
@@ -64,143 +69,369 @@
 @endsection
 @section('styles')
     <style>
-        .order-page {
-            background: linear-gradient(135deg, #0b1220, #0f172a);
+        /* ================= PAGE BACKGROUND ================= */
+        .td-page {
+            background:
+                radial-gradient(circle at 20% 0%, #1e293b, transparent 40%),
+                radial-gradient(circle at 80% 100%, #312e81, transparent 40%),
+                linear-gradient(135deg, #0b1220, #020617);
             min-height: 100vh;
         }
 
-        .page-title {
-            color: #fff;
-            font-weight: 600;
+        /* ================= PAGE TITLE ================= */
+        h3 {
+            font-weight: 700;
+            letter-spacing: .3px;
         }
 
+        /* ================= ORDER CARD ================= */
         .order-card {
-            background: rgba(255, 255, 255, .05);
-            border: 1px solid rgba(255, 255, 255, .08);
-            border-radius: 18px;
-            padding: 20px;
+
+            background: rgba(255, 255, 255, 0.04);
+
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 20px;
+
+            padding: 22px 24px;
+
             margin-bottom: 18px;
+
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
-            transition: all .25s ease;
-            flex-wrap: wrap;
+
+            backdrop-filter: blur(14px);
+
+            transition: all .35s ease;
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+        /* subtle glow */
+        .order-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg,
+                    transparent,
+                    rgba(99, 102, 241, .15),
+                    transparent);
+            opacity: 0;
+            transition: opacity .35s ease;
+            pointer-events: none;
+            /* FIX */
         }
 
         .order-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, .2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+
+            transform: translateY(-6px);
+
+            border-color: rgba(99, 102, 241, .4);
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, .5),
+                0 0 25px rgba(99, 102, 241, .15);
         }
 
+        .order-card:hover::before {
+            opacity: 1;
+        }
+
+
+        /* ================= LEFT SECTION ================= */
         .order-left {
+
             display: flex;
+
             flex-direction: column;
-            gap: 4px;
+
+            gap: 6px;
         }
 
         .order-id {
+
+            font-size: 17px;
+
+            font-weight: 700;
+
             color: #fff;
-            font-weight: 600;
         }
 
         .order-date {
+
             font-size: 13px;
-            color: #9ca3af;
+
+            color: #94a3b8;
+        }
+
+        .order-branch {
+
+            font-size: 13px;
+
+            color: #a5b4fc;
+
+            font-weight: 500;
+        }
+
+
+        /* ================= RIGHT SECTION ================= */
+        .order-right {
+
+            text-align: right;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: flex-end;
+
+            gap: 10px;
         }
 
         .order-price {
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
+
+            font-size: 22px;
+
+            font-weight: 800;
+
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+
+            -webkit-background-clip: text;
+
+            -webkit-text-fill-color: transparent;
         }
 
-        .order-right {
-            text-align: right;
-        }
 
+        /* ================= STATUS BADGE ================= */
         .order-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 50px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            padding: 6px 14px;
+
+            border-radius: 999px;
+
             font-size: 12px;
+
             font-weight: 600;
-            margin-top: 6px;
+
+            width: fit-content;
+
+            letter-spacing: .4px;
         }
 
-        /* Status Colors */
+        /* Pending */
         .badge-pending {
-            background: rgba(251, 191, 36, .2);
+
+            background: rgba(251, 191, 36, .12);
+
             color: #fbbf24;
+
+            border: 1px solid rgba(251, 191, 36, .25);
         }
 
+        /* Process */
         .badge-process {
-            background: rgba(59, 130, 246, .2);
-            color: #3b82f6;
+
+            background: rgba(59, 130, 246, .12);
+
+            color: #60a5fa;
+
+            border: 1px solid rgba(59, 130, 246, .25);
         }
 
+        /* Done */
         .badge-done {
-            background: rgba(34, 197, 94, .2);
+
+            background: rgba(34, 197, 94, .12);
+
             color: #22c55e;
+
+            border: 1px solid rgba(34, 197, 94, .25);
         }
 
+        /* Cancel */
         .badge-cancel {
-            background: rgba(239, 68, 68, .2);
+
+            background: rgba(239, 68, 68, .12);
+
             color: #ef4444;
+
+            border: 1px solid rgba(239, 68, 68, .25);
         }
 
-        .badge-default {
-            background: rgba(156, 163, 175, .2);
-            color: #9ca3af;
-        }
 
-        /* Modern Button */
+        /* ================= MODERN BUTTON ================= */
         .btn-modern {
+
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
+
             border: none;
+
             border-radius: 12px;
-            padding: 8px 16px;
+
+            padding: 9px 16px;
+
             color: #fff !important;
+
             font-weight: 600;
-            transition: all .2s ease;
+
+            font-size: 14px;
+
+            transition: all .3s ease;
+
+            box-shadow: 0 6px 20px rgba(99, 102, 241, .25);
         }
 
         .btn-modern:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, .4);
+
+            transform: translateY(-3px);
+
+            box-shadow: 0 12px 30px rgba(99, 102, 241, .5);
+
             color: #fff !important;
         }
 
-        /* Empty State */
+
+        /* ================= EMPTY STATE ================= */
         .empty-state {
+
             text-align: center;
-            padding: 80px 20px;
-            color: #9ca3af;
+
+            padding: 100px 20px;
+
+            background: rgba(255, 255, 255, .03);
+
+            border-radius: 20px;
+
+            border: 1px solid rgba(255, 255, 255, .06);
+
+            backdrop-filter: blur(10px);
         }
 
         .empty-state i {
-            font-size: 40px;
-            margin-bottom: 15px;
-            color: rgba(255, 255, 255, .3);
+
+            font-size: 50px;
+
+            margin-bottom: 20px;
+
+            color: rgba(99, 102, 241, .5);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        .empty-state h5 {
+
+            color: #fff;
+
+            font-weight: 600;
+
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+
+            color: #94a3b8;
+        }
+
+
+        /* ================= PAGINATION ================= */
+        .pagination {
+
+            gap: 6px;
+        }
+
+        .pagination .page-link {
+
+            background: rgba(255, 255, 255, .04);
+
+            border: 1px solid rgba(255, 255, 255, .08);
+
+            color: #cbd5e1;
+
+            border-radius: 10px;
+
+            padding: 6px 12px;
+        }
+
+        .pagination .page-link:hover {
+
+            background: rgba(99, 102, 241, .2);
+
+            border-color: rgba(99, 102, 241, .4);
+
+            color: #fff;
+        }
+
+        .pagination .active .page-link {
+
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+
+            border: none;
+
+            color: #fff;
+        }
+
+
+        /* ================= MOBILE ================= */
+        @media (max-width:768px) {
+
             .order-card {
+
                 flex-direction: column;
+
                 align-items: flex-start;
+
+                gap: 14px;
             }
 
             .order-right {
+
                 width: 100%;
+
+                align-items: flex-start;
+
                 text-align: left;
-                margin-top: 12px;
             }
+
+            .order-price {
+
+                font-size: 20px;
+            }
+
         }
 
-        .pagination-wrapper .pagination {
-            justify-content: center;
+        .order-branch {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #c4b5fd;
+            background: rgba(139, 92, 246, 0.10);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            padding: 4px 10px;
+            border-radius: 999px;
+            width: fit-content;
+            margin-top: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .order-branch:hover {
+            background: rgba(139, 92, 246, 0.18);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .branch-icon {
+            font-size: 12px;
+            color: #a78bfa;
         }
     </style>
 @endsection

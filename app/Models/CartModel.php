@@ -16,4 +16,8 @@ class CartModel extends Model
     {
         return $this->hasMany(CartItemModel::class, 'cart_id');
     }
+    public function branch()
+    {
+        return $this->belongsTo(BranchModel::class, 'branch_id');
+    }
 }

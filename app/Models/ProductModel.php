@@ -22,6 +22,7 @@ class ProductModel extends Model
         'is_active',
     ];
 
+
     protected $casts = [
         'is_active' => 'boolean',
         'image'     => 'array',

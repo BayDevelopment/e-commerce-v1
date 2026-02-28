@@ -4,7 +4,7 @@
     <div class="container-fluid pt-5 pb-2">
 
         <!-- HEADER -->
-        <div class="mb-1 ">
+        <div class="mb-3">
             <h3 class="fw-bold text-white mb-1">
                 Halo, {{ Auth::user()->name }} 👋
             </h3>
@@ -16,6 +16,7 @@
         <!-- STAT CARDS -->
         <div class="row g-4 mb-4">
 
+            <!-- TOTAL PRODUK -->
             <div class="col-lg-3 col-md-6">
                 <a href="{{ route('customer.product') }}" class="td-card-link text-decoration-none">
                     <div class="td-card p-4">
@@ -34,7 +35,7 @@
                 </a>
             </div>
 
-            <!-- PESANAN SAYA -->
+            <!-- TOTAL PESANAN -->
             <div class="col-lg-3 col-md-6">
                 <a href="{{ route('customer.orders') }}" class="td-card-link text-decoration-none">
                     <div class="td-card p-4">
@@ -59,7 +60,7 @@
                     <div class="td-card p-4">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <p class="text-secondary small mb-1">Sedang Diproses</p>
+                                <p class="text-secondary small mb-1">Diproses</p>
                                 <h4 class="fw-bold text-white mb-0">
                                     {{ $orderProcess ?? 0 }}
                                 </h4>
@@ -78,7 +79,7 @@
                     <div class="td-card p-4">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <p class="text-secondary small mb-1">Pesanan Selesai</p>
+                                <p class="text-secondary small mb-1">Selesai</p>
                                 <h4 class="fw-bold text-white mb-0">
                                     {{ $orderDone ?? 0 }}
                                 </h4>
@@ -93,98 +94,63 @@
 
         </div>
 
-        <!-- QUICK ACTION -->
+
+        <!-- CHART + STATUS -->
         <div class="row g-4">
 
+            <!-- CHART -->
             <div class="col-lg-8">
-                <div class="td-card p-4 h-100">
-                    <h5 class="fw-bold text-white mb-4">Status Akun</h5>
+                <div class="td-card p-4 chart-card">
+                    <h5 class="fw-bold text-white mb-4">
+                        Statistik Pesanan
+                    </h5>
 
-                    <div class="row g-4">
-
-                        <!-- EMAIL VERIFIED -->
-                        <div class="col-md-6">
-                            <div class="td-status-card">
-                                <div class="td-status-icon {{ Auth::user()->email_verified_at ? 'success' : 'danger' }}">
-                                    <i
-                                        class="fa-solid {{ Auth::user()->email_verified_at ? 'fa-envelope-circle-check' : 'fa-envelope-open-text' }}"></i>
-                                </div>
-
-                                <div>
-                                    <div class="fw-semibold text-white mb-1">
-                                        Email
-                                    </div>
-                                    <div
-                                        class="small {{ Auth::user()->email_verified_at ? 'text-success' : 'text-danger' }}">
-                                        {{ Auth::user()->email_verified_at ? 'Sudah diverifikasi' : 'Belum diverifikasi' }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- DATA DIRI -->
-                        <div class="col-md-6">
-                            <div class="td-status-card">
-                                @php
-                                    $profileComplete = Auth::user()->name && Auth::user()->email;
-                                @endphp
-
-                                <div class="td-status-icon {{ $profileComplete ? 'info' : 'warning' }}">
-                                    <i class="fa-solid {{ $profileComplete ? 'fa-id-card' : 'fa-user-pen' }}"></i>
-                                </div>
-
-                                <div>
-                                    <div class="fw-semibold text-white mb-1">
-                                        Data Diri
-                                    </div>
-                                    <div class="small {{ $profileComplete ? 'text-info' : 'text-warning' }}">
-                                        {{ $profileComplete ? 'Sudah lengkap' : 'Belum lengkap' }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- OPTIONAL CTA -->
-                    @if (!Auth::user()->email_verified_at || !$profileComplete)
-                        <div class="mt-4">
-                            <a href="{{ route('customer.dashboard') }}" class="btn btn-outline-td w-100 td-btn-action">
-                                <i class="fa-solid fa-user-gear"></i>
-                                Lengkapi Akun
-                            </a>
-                        </div>
-                    @endif
+                    <canvas id="orderChart"></canvas>
 
                 </div>
             </div>
 
 
-            <!-- CTA -->
+            <!-- STATUS AKUN -->
             <div class="col-lg-4">
-                <div class="td-cta p-4 h-100">
-                    <div class="content">
-                        <h5 class="fw-bold text-white mb-2">
-                            Mulai Belanja 🚀
-                        </h5>
-                        <p class="text-secondary mb-3">
-                            Jelajahi produk terbaik dan promo hari ini
-                        </p>
-                        <a href="{{ route('products.index') }}" class="btn btn-td w-100 td-btn-action">
-                            <i class="fa-solid fa-bag-shopping"></i>
-                            Belanja Sekarang
-                        </a>
+                <div class="td-card p-4 chart-card">
+
+                    <h5 class="fw-bold text-white mb-4">
+                        Status Akun
+                    </h5>
+
+                    @php
+                        $profileComplete = Auth::user()->name && Auth::user()->email;
+                    @endphp
+
+                    <!-- EMAIL -->
+                    <div class="td-status-card mb-3">
+                        <div class="td-status-icon {{ Auth::user()->email_verified_at ? 'success' : 'danger' }}">
+                            <i
+                                class="fa-solid {{ Auth::user()->email_verified_at ? 'fa-envelope-circle-check' : 'fa-envelope-open-text' }}"></i>
+                        </div>
+
+                        <div>
+                            <div class="fw-semibold text-white">
+                                Email
+                            </div>
+                            <div class="small {{ Auth::user()->email_verified_at ? 'text-success' : 'text-danger' }}">
+                                {{ Auth::user()->email_verified_at ? 'Sudah diverifikasi' : 'Belum diverifikasi' }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
         </div>
 
+
     </div>
 @endsection
+
+
 @section('styles')
     <style>
-        /* DASHBOARD ICON */
         .td-dashboard-icon {
             width: 54px;
             height: 54px;
@@ -194,20 +160,8 @@
             justify-content: center;
             font-size: 1.4rem;
             color: #fff;
-            background: linear-gradient(135deg,
-                    rgba(111, 66, 193, 0.55),
-                    rgba(59, 130, 246, 0.45));
         }
 
-        /* ACTIVITY DOT */
-        .td-activity-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-top: 6px;
-        }
-
-        /* STATUS CARD */
         .td-status-card {
             display: flex;
             align-items: center;
@@ -216,15 +170,8 @@
             border-radius: 16px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.25s ease;
         }
 
-        .td-status-card:hover {
-            border-color: rgba(111, 66, 193, 0.45);
-            transform: translateY(-2px);
-        }
-
-        /* ICON */
         .td-status-icon {
             width: 46px;
             height: 46px;
@@ -232,25 +179,85 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
             color: #fff;
         }
 
-        /* ICON VARIANT */
-        .td-status-icon.success {
+        .success {
             background: linear-gradient(135deg, #22c55e, #16a34a);
         }
 
-        .td-status-icon.danger {
+        .danger {
             background: linear-gradient(135deg, #ef4444, #dc2626);
         }
 
-        .td-status-icon.info {
+        .info {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
         }
 
-        .td-status-icon.warning {
+        .warning {
             background: linear-gradient(135deg, #f59e0b, #d97706);
         }
+
+        /* tinggi card  */
+        .chart-card {
+            height: auto;
+            min-height: unset;
+        }
+
+        .chart-card canvas {
+            max-height: 220px;
+        }
     </style>
+@endsection
+
+
+
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const ctx = document.getElementById('orderChart');
+
+        new Chart(ctx, {
+
+            type: 'doughnut',
+
+            data: {
+
+                labels: [
+                    'Diproses',
+                    'Selesai'
+                ],
+
+                datasets: [{
+
+                    data: [
+                        {{ $orderProcess ?? 0 }},
+                        {{ $orderDone ?? 0 }}
+                    ],
+
+                    borderWidth: 0
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                plugins: {
+
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+
+                }
+
+            }
+
+        });
+    </script>
 @endsection

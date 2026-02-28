@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Filament\Resources\Products\ProductResource;
+use App\Models\ProductVariantModel;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\AssociateAction;
@@ -14,6 +16,8 @@ use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -27,7 +31,6 @@ use Filament\Tables\Table;
 class VariantsRelationManager extends RelationManager
 {
     protected static string $relationship = 'variants';
-
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -47,8 +50,10 @@ class VariantsRelationManager extends RelationManager
                                 ->placeholder('Contoh: Merah'),
 
                             TextInput::make('size')
-                                ->label('Ukuran')
-                                ->placeholder('Contoh: M'),
+                                ->label('Ukuran / Porsi')
+                                ->placeholder('Contoh: M, XL, 32, 44, Jumbo, 500gr')
+                                ->maxLength(50)
+                                ->nullable(),
                         ]),
 
                         Grid::make(2)->schema([
@@ -69,6 +74,14 @@ class VariantsRelationManager extends RelationManager
                                     fn($state) =>
                                     str_replace('.', '', $state)
                                 ),
+                            Select::make('branch_id')
+                                ->label('Cabang')
+                                ->relationship('branch', 'name')
+                                ->searchable()
+                                ->preload()
+                                ->required(),
+                        ]),
+                        Grid::make(1)->schema([
 
                             TextInput::make('stock')
                                 ->label('Stok')
@@ -76,7 +89,8 @@ class VariantsRelationManager extends RelationManager
                                 ->required()
                                 ->default(0)
                                 ->minValue(0)
-                                ->placeholder('Contoh: 10'),
+                                ->placeholder('Contoh: 100'),
+
                         ]),
                     ]),
             ]);
@@ -100,13 +114,17 @@ class VariantsRelationManager extends RelationManager
                 TextColumn::make('price')
                     ->label('Harga')
                     ->money('IDR', locale: 'id'),
+                TextColumn::make('branch.name')
+                    ->label('Cabang')
+                    ->badge()
+                    ->color('info'),
 
                 TextColumn::make('stock')
                     ->label('Stok')
                     ->badge()
                     ->color(
                         fn($state) =>
-                        $state > 10 ? 'success' : ($state > 0 ? 'warning' : 'danger')
+                        $state <= 0 ? 'danger' : ($state <= 5 ? 'warning' : 'success')
                     ),
             ])
             ->defaultSort('created_at', 'desc')
@@ -148,6 +166,13 @@ class VariantsRelationManager extends RelationManager
 
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('manageStock')
+                        ->label('Kelola Stok')
+                        ->icon('heroicon-o-cube')
+                        ->color('success')
+                        ->url(fn($record) => ProductResource::getUrl('edit', [
+                            'record' => $record->product_id,
+                        ])),
                     EditAction::make()
                         ->label('Edit')
                         ->icon('heroicon-o-pencil-square')

@@ -1,18 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\Orders\Pages;
+namespace App\Filament\Resources\Branches\Pages;
 
-use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Resources\Branches\BranchResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
-class EditOrder extends EditRecord
+class EditBranch extends EditRecord
 {
-    protected static string $resource = OrderResource::class;
+    protected static string $resource = BranchResource::class;
 
     protected function getRedirectUrl(): string
     {
@@ -22,7 +20,7 @@ class EditOrder extends EditRecord
     {
         return Notification::make()
             ->title('Berhasil')
-            ->body('Data pesanan berhasil diperbarui.')
+            ->body('Data cabang berhasil ditambahkan.')
             ->success();
     }
 

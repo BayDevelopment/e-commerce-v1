@@ -1,52 +1,77 @@
 <nav class="navbar navbar-expand-lg fixed-top td-navbar">
-    <div class="container">
+    <div class="container d-flex align-items-center justify-content-between">
+
+        {{-- BRAND --}}
         <a class="navbar-brand td-brand" href="#">
             Trendora
         </a>
 
-        <button class="navbar-toggler td-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-            aria-label="Toggle navigation">
-            <i class="fa-solid fa-bars"></i>
-        </button>
+        {{-- RIGHT SIDE (MOBILE CART + TOGGLER) --}}
+        <div class="d-flex align-items-center gap-3">
 
+            {{-- CART MOBILE --}}
+            @php
+                $cartCount = 0;
+
+                if (auth()->check()) {
+                    $cart = \App\Models\CartModel::where('user_id', auth()->id())->first();
+                } else {
+                    $cart = \App\Models\CartModel::where('session_id', session()->getId())->first();
+                }
+
+                if ($cart) {
+                    $cartCount = $cart->items()->count();
+                }
+            @endphp
+
+            <a href="{{ route('customer.cart.index') }}" class="td-cart-mobile d-lg-none position-relative">
+
+                <i class="fa-solid fa-cart-shopping"></i>
+
+                @if ($cartCount > 0)
+                    <span class="td-cart-badge">
+                        {{ $cartCount }}
+                    </span>
+                @endif
+            </a>
+
+            {{-- TOGGLER --}}
+            <button class="navbar-toggler td-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        {{-- COLLAPSE MENU --}}
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+
                 <li class="nav-item">
                     <a class="nav-link nav-underline {{ $navlink === 'dashboard' ? 'active' : '' }}"
                         href="{{ url('/customer/dashboard') }}">
                         Dashboard
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link nav-underline {{ $navlink === 'produk' ? 'active' : '' }}"
                         href="{{ url('/customer/product') }}">
                         Product
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link nav-underline {{ $navlink === 'laporan' ? 'active' : '' }}"
                         href="{{ url('/customer/laporan') }}">
                         Laporan
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ route('customer.cart.index') }}" class="td-cart-link position-relative me-3">
-                        <i class="fa-solid fa-cart-shopping fs-5"></i>
 
-                        @php
-                            $cartCount = 0;
+                {{-- CART DESKTOP --}}
+                <li class="nav-item d-none d-lg-block">
+                    <a href="{{ route('customer.cart.index') }}" class="td-cart-link position-relative">
 
-                            if (auth()->check()) {
-                                $cart = \App\Models\CartModel::where('user_id', auth()->id())->first();
-                            } else {
-                                $cart = \App\Models\CartModel::where('session_id', session()->getId())->first();
-                            }
-
-                            if ($cart) {
-                                $cartCount = $cart->items()->count();
-                            }
-                        @endphp
+                        <i class="fa-solid fa-cart-shopping"></i>
 
                         @if ($cartCount > 0)
                             <span class="td-cart-badge">
@@ -54,44 +79,43 @@
                             </span>
                         @endif
                     </a>
-
                 </li>
 
+                {{-- USER DROPDOWN --}}
                 <li class="nav-item dropdown">
                     <a class="nav-link d-flex align-items-center gap-2 td-user-toggle" href="#" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
+                        data-bs-toggle="dropdown">
 
-                        <!-- AVATAR -->
+                        {{-- Avatar --}}
                         <div class="td-user-avatar">
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                         </div>
 
-                        <!-- ICON -->
+                        {{-- Nama & Email hanya tampil di mobile (d-lg-none) --}}
+                        <div class="d-flex flex-column ms-2 d-lg-none">
+                            <span class="text-white fw-semibold small">
+                                {{ Auth::user()->name }}
+                            </span>
+                            <span class="text-secondary small">
+                                {{ Auth::user()->email }}
+                            </span>
+                        </div>
+
+                        {{-- Nama & Email hanya tampil di desktop (d-none d-lg-flex) --}}
+                        <div class="d-none d-lg-flex flex-column ms-2">
+                            <span class="text-white fw-semibold small">
+                                {{ Auth::user()->name }}
+                            </span>
+                            <span class="text-secondary small">
+                                {{ Auth::user()->email }}
+                            </span>
+                        </div>
+
                         <i class="fa-solid fa-chevron-down td-user-caret d-none d-md-inline"></i>
                     </a>
 
-                    <!-- DROPDOWN -->
+                    {{-- Dropdown tanpa info user, hanya menu --}}
                     <ul class="dropdown-menu dropdown-menu-end td-user-dropdown">
-                        <li class="px-3 py-2">
-                            <div class="td-user-mini">
-                                <div class="td-user-avatar sm">
-                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                </div>
-                                <div class="ms-2">
-                                    <div class="fw-semibold text-white">
-                                        {{ Auth::user()->name }}
-                                    </div>
-                                    <div class="small text-secondary">
-                                        {{ Auth::user()->email }}
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-
                         <li>
                             <a class="dropdown-item" href="{{ route('customer.profile') }}">
                                 <i class="fa-regular fa-user me-2"></i>
@@ -110,7 +134,6 @@
                         </li>
                     </ul>
                 </li>
-
             </ul>
         </div>
     </div>

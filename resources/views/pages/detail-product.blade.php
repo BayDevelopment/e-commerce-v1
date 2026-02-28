@@ -281,7 +281,7 @@
                 document.getElementById('formVariantId').value = selected.value;
                 document.getElementById('formQty').value = qtyInput.value;
 
-                form.action = "{{ route('buy.now') }}";
+                form.action = "{{ route('customer.buy.now') }}";
                 form.submit();
             }
 

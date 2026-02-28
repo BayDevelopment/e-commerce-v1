@@ -257,33 +257,16 @@
 
                 if (!validateProductSelection()) return;
 
-                if (!isLoggedIn) {
+                const variantId = Number(getSelectedVariant().value);
+                const qty = Number(qtyInput.value) || 1;
 
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Login Diperlukan',
-                        text: 'Silakan login terlebih dahulu untuk melanjutkan pembelian.',
-                        confirmButtonColor: '#6366f1',
-                        confirmButtonText: 'Login Sekarang',
-                        showCancelButton: true,
-                        cancelButtonText: 'Nanti Saja'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = "{{ route('login') }}?redirect=checkout";
-                        }
-                    });
+                const url = new URL("{{ route('customer.checkout') }}", window.location.origin);
 
-                    return;
-                }
+                url.searchParams.set("variant_id", variantId);
+                url.searchParams.set("qty", qty);
 
-                const selected = getSelectedVariant();
-
-                document.getElementById('formVariantId').value = selected.value;
-                document.getElementById('formQty').value = qtyInput.value;
-
-                form.action = "{{ route('buy.now') }}";
-                form.submit();
-            }
+                window.location.href = url.toString();
+            };
 
         });
     </script>

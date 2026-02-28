@@ -102,7 +102,7 @@
                                             'category' => $product->category->slug,
                                             'product' => $product->slug,
                                         ]) }}"
-                                            class="btn-action">
+                                            class="btn-action text-decoration-none">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
                                     @else

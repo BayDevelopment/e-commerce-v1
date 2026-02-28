@@ -6,27 +6,40 @@ use App\Models\OrderModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | ORDER LIST
+    | ORDER LIST (Pesanan Saya)
     |--------------------------------------------------------------------------
     */
-
-    public function index()
+    public function index(Request $request)
     {
-        $orders = OrderModel::with('paymentMethod')
-            ->where('user_id', Auth::id())
-            ->latest()
-            ->paginate(10);
+        $allowedStatuses = ['pending', 'process', 'done', 'cancel'];
 
-        return view('customer.order', [
-            'title' => 'Pesanan Saya | Trendora',
-            'navlink' => 'Pesanan Saya',
-            'orders' => $orders,
-        ]);
+        $query = OrderModel::with(['paymentMethod', 'branch']) // tambah branch kalau ada relasi
+            ->where('user_id', Auth::id());
+
+        // Filter status hanya jika valid
+        if ($request->filled('status')) {
+            $query->when(
+                in_array($request->status, $allowedStatuses),
+                fn($q) => $q->where('status', $request->status)
+            )->when(
+                !in_array($request->status, $allowedStatuses),
+                fn($q) => $q->whereRaw('1 = 0') // kosongkan kalau status invalid
+            );
+        }
+
+        $orders = $query->latest()->paginate(10)->withQueryString();
+
+        return view('customer.order', compact('orders'))
+            ->with([
+                'title'   => 'Pesanan Saya | Trendora',
+                'navlink' => 'Pesanan Saya',
+            ]);
     }
 
     /*
@@ -34,56 +47,67 @@ class OrderController extends Controller
     | ORDER DETAIL
     |--------------------------------------------------------------------------
     */
-
     public function show(OrderModel $order)
     {
-        // 🔐 pastikan hanya owner yg bisa lihat
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorizeOrder($order);
 
-        $order->load(['items', 'paymentMethod']);
+        $order->load([
+            'items.variant.product',     // load detail item + variant + produk
+            'paymentMethod',
+            'branch',                    // kalau sudah ada relasi branch
+        ]);
 
         return view('customer.view-order', [
-            'title' => 'Detail Pesanan',
+            'title'   => 'Detail Pesanan #' . $order->id,
             'navlink' => 'Detail Pesanan',
-            'order' => $order,
+            'order'   => $order,
         ]);
     }
 
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | UPLOAD BUKTI TRANSFER
+    |--------------------------------------------------------------------------
+    */
     public function uploadProof(Request $request, OrderModel $order)
     {
-        // 🔐 Pastikan hanya owner yang bisa upload
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorizeOrder($order);
 
-        // ❌ Tidak boleh upload kalau sudah paid / cancel
+        // Hanya boleh upload kalau pending
         if ($order->payment_status !== 'pending') {
-            return back()->withErrors([
-                'payment' => 'Pesanan ini tidak bisa upload bukti lagi.'
-            ]);
+            return back()->withErrors(['payment' => 'Bukti sudah diupload atau pesanan tidak bisa diubah lagi.']);
         }
 
         $request->validate([
-            'payment_proof' => 'required|image|max:1024',
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048', // naikkan ke 2MB, lebih nyaman
         ]);
 
-        // 🔥 Hapus bukti lama kalau ada
-        if ($order->payment_proof && Storage::disk('public')->exists($order->payment_proof)) {
-            Storage::disk('public')->delete($order->payment_proof);
+        try {
+            // Hapus bukti lama kalau ada
+            if ($order->payment_proof && Storage::disk('public')->exists($order->payment_proof)) {
+                Storage::disk('public')->delete($order->payment_proof);
+            }
+
+            $path = $request->file('payment_proof')->store('payment-proofs', 'public');
+
+            $order->update([
+                'payment_proof'   => $path,
+                'payment_status'  => 'pending',
+            ]);
+
+            return back()->with('success', 'Bukti transfer berhasil diupload. Admin akan segera memverifikasi.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['payment' => 'Gagal upload bukti: ' . $e->getMessage()]);
         }
+    }
 
-        $path = $request->file('payment_proof')
-            ->store('payment-proofs', 'public');
-
-        $order->update([
-            'payment_proof' => $path,
-            'payment_status' => 'pending', // atau bisa pakai 'waiting_confirmation'
-        ]);
-
-        return back()->with('success', 'Bukti transfer berhasil diupload.');
+    /**
+     * Helper: Authorize order milik user
+     */
+    private function authorizeOrder(OrderModel $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Akses ditolak. Ini bukan pesanan Anda.');
+        }
     }
 }

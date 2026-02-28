@@ -38,10 +38,8 @@ class PaymentMethodForm
                             ->label('Nomor Rekening')
                             ->placeholder('Contoh: 1234567890')
                             ->prefixIcon('heroicon-o-hashtag')
-                            ->tel() // mobile numeric keyboard
-                            ->inputMode('numeric') // paksa numeric mode
-                            ->pattern('[0-9]*') // hanya angka
-                            ->rule('regex:/^[0-9]+$/') // validasi backend
+                            ->tel()
+                            ->numeric() // hanya angka
                             ->maxLength(30)
                             ->required(),
 
