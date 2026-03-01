@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Notifications\ResetPassword;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\ValidationException;
 
 class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     use HasFactory, Notifiable;
-
     protected $fillable = [
         'name',
         'email',
@@ -31,6 +32,17 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        if ($this->role !== 'admin') {
+            throw ValidationException::withMessages([
+                'email' => 'Email ini bukan akun admin.',
+            ]);
+        }
+
+        $this->notify(new ResetPassword($token));
     }
 
     public function canAccessPanel(Panel $panel): bool
