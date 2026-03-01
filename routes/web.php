@@ -56,11 +56,13 @@ Route::middleware('guest')->prefix('auth')->group(function () {
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'loginProses'])
-        ->middleware('throttle:5,1'); // max 5 percobaan per 1 menit
+        ->middleware('throttle:5,1')
+        ->name('login.proses'); // max 5 percobaan per 1 menit
 
     Route::get('/register', [AuthController::class, 'register'])->name('register');
     Route::post('/register', [AuthController::class, 'RegisterProses'])
-        ->middleware('throttle:3,5');
+        ->middleware('throttle:3,5')
+        ->name('register.proses');
 
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
         ->name('password.request');
