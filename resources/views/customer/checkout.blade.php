@@ -104,9 +104,16 @@
                                             {{ $product?->name ?? '-' }}
                                         </div>
 
-                                        <div class="item-variant">
-                                            {{ $variant?->color ?? '-' }}
-                                            {{ $variant?->size ? ' • ' . $variant->size : '' }}
+                                        <div class="text-secondary small mb-2">
+                                            {{ $item->variant->color }}
+                                            {{ $item->variant->size ? '• ' . $item->variant->size : '' }}
+                                        </div>
+
+                                        {{-- BRANCH --}}
+                                        <div class="small mb-2">
+                                            <span class="badge bg-info text-dark">
+                                                {{ $item->variant->branch->name }}
+                                            </span>
                                         </div>
 
                                         <div class="item-price">

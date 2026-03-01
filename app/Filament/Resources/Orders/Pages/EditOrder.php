@@ -4,11 +4,11 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Filament\Resources\Orders\OrderResource;
 use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+
+use Illuminate\Support\Facades\DB;
+use App\Models\OrderModel;
 
 class EditOrder extends EditRecord
 {
@@ -18,6 +18,7 @@ class EditOrder extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
     protected function getSavedNotification(): ?Notification
     {
         return Notification::make()
@@ -53,5 +54,40 @@ class EditOrder extends EditRecord
                 ->url(static::getResource()::getUrl('index')),
 
         ];
+    }
+
+    /**
+     * Restore stock otomatis jika cancel + rejected
+     */
+    protected function afterSave(): void
+    {
+        /** @var OrderModel $order */
+        $order = $this->record->load('items.variant');
+
+        // hanya restore jika cancel + rejected dan belum pernah restore
+        if (
+            $order->status === 'cancel'
+            && $order->payment_status === 'rejected'
+            && !$order->stock_restored
+        ) {
+
+            DB::transaction(function () use ($order) {
+
+                foreach ($order->items as $item) {
+
+                    if ($item->variant) {
+
+                        $item->variant->increment(
+                            'stock',
+                            $item->quantity
+                        );
+                    }
+                }
+
+                $order->update([
+                    'stock_restored' => true
+                ]);
+            });
+        }
     }
 }

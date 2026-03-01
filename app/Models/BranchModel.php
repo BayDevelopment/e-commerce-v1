@@ -47,18 +47,15 @@ class BranchModel extends Model
         return $this->hasMany(CartModel::class);
     }
 
-    // relasi ke varianstok
-    // public function variantStocks()
-    // {
-    //     return $this->hasMany(ProductVariantStock::class, 'product_variant_id');
-    // }
-    public function variantStocks()
+    public function productVariants()
     {
         return $this->hasMany(
-            ProductVariantStock::class,
-            'branch_id'
+            ProductVariantModel::class,
+            'branch_id',
+            'id'
         );
     }
+
 
     // Optional: kalau nanti user punya default branch
     public function users()

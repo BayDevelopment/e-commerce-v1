@@ -27,15 +27,11 @@ class CheckoutController extends Controller
             abort(403);
         }
 
-        // ambil semua branch aktif
-        $branches = BranchModel::active()->get();
-
         /*
     |--------------------------------------------------------------------------
     | BUY NOW MODE
     |--------------------------------------------------------------------------
     */
-
         if ($request->filled('variant_id') && $request->filled('qty')) {
 
             $variant = ProductVariantModel::with('product')
@@ -51,6 +47,14 @@ class CheckoutController extends Controller
                 return back()->with('error', 'Stock tidak cukup');
             }
 
+            // ✅ hanya branch yg punya variant ini & stock tersedia
+            $branches = BranchModel::active()
+                ->whereHas('productVariants', function ($q) use ($variant) {
+                    $q->where('id', $variant->id)
+                        ->where('stock', '>', 0);
+                })
+                ->get();
+
             $buyNowItem = (object)[
                 'variant' => $variant,
                 'qty' => $request->qty
@@ -60,13 +64,12 @@ class CheckoutController extends Controller
 
             return view('customer.checkout', [
 
-                'title'      => 'Buat Pesanan | Trendora',
-
-                'navlink'      => 'Buat Pesanan',
+                'title' => 'Buat Pesanan | Trendora',
+                'navlink' => 'Buat Pesanan',
 
                 'buyNowItem' => $buyNowItem,
 
-                'branches' => $branches, // ✅ FIX WAJIB
+                'branches' => $branches,
 
                 'paymentMethods' => $paymentMethods,
 
@@ -95,6 +98,23 @@ class CheckoutController extends Controller
                 ->with('error', 'Keranjang kosong');
         }
 
+        // ambil variant ids dari cart
+        $variantIds = $cart->items->pluck('variant_id');
+
+        // ✅ hanya branch yg punya variant di cart & stock tersedia
+        $branches = BranchModel::active()
+            ->whereHas('productVariants', function ($q) use ($variantIds) {
+                $q->whereIn('id', $variantIds)
+                    ->where('stock', '>', 0);
+            })
+            ->get();
+
+        if ($branches->isEmpty()) {
+            return back()->withErrors([
+                'branch' => 'Tidak ada cabang yang memiliki produk tersedia'
+            ]);
+        }
+
         $paymentMethods = PayMethodModel::where('is_active', true)->get();
 
         $total = $cart->items->sum(function ($item) {
@@ -104,9 +124,13 @@ class CheckoutController extends Controller
 
         return view('customer.checkout', [
 
+            'title' => 'Checkout | Trendora',
+
+            'navlink' => 'Checkout',
+
             'cart' => $cart,
 
-            'branches' => $branches, // ✅ FIX WAJIB
+            'branches' => $branches,
 
             'paymentMethods' => $paymentMethods,
 
@@ -144,6 +168,23 @@ class CheckoutController extends Controller
 
                 /*
             |--------------------------------------------------------------------------
+            | VALIDASI BRANCH HARUS PUNYA PRODUCT
+            |--------------------------------------------------------------------------
+            */
+
+                $branchValid = ProductVariantModel::where('branch_id', $request->branch_id)
+                    ->where('stock', '>', 0)
+                    ->exists();
+
+                if (!$branchValid) {
+
+                    throw new \Exception(
+                        'Cabang tidak memiliki produk tersedia'
+                    );
+                }
+
+                /*
+            |--------------------------------------------------------------------------
             | BUY NOW MODE
             |--------------------------------------------------------------------------
             */
@@ -151,9 +192,11 @@ class CheckoutController extends Controller
 
                     $variant = ProductVariantModel::lockForUpdate()
                         ->with('product')
+                        ->where('branch_id', $request->branch_id)
                         ->findOrFail($request->variant_id);
 
                     if ($variant->stock < $request->qty) {
+
                         throw new \Exception(
                             'Stok tidak cukup untuk ' .
                                 $variant->product->name
@@ -166,7 +209,6 @@ class CheckoutController extends Controller
 
                         'user_id' => $user->id,
 
-                        // ✅ ambil dari form
                         'branch_id' => $request->branch_id,
 
                         'payment_method_id' => $payment->id,
@@ -211,7 +253,11 @@ class CheckoutController extends Controller
             |--------------------------------------------------------------------------
             | CART MODE
             |--------------------------------------------------------------------------
-            */ else {
+            */ /*
+|--------------------------------------------------------------------------
+| CART MODE
+|--------------------------------------------------------------------------
+*/ else {
 
                     $cart = CartModel::with(['items.variant.product'])
                         ->where('user_id', $user->id)
@@ -221,33 +267,48 @@ class CheckoutController extends Controller
                         throw new \Exception('Keranjang kosong');
                     }
 
+                    /*
+    |--------------------------------------------------------------------------
+    | VALIDASI: semua produk harus milik cabang yang dipilih
+    |--------------------------------------------------------------------------
+    */
+
+                    $invalidProducts = [];
+
                     foreach ($cart->items as $item) {
 
-                        $variant = ProductVariantModel::lockForUpdate()
-                            ->with('product')
-                            ->findOrFail($item->variant_id);
+                        $exists = ProductVariantModel::where('id', $item->variant_id)
+                            ->where('branch_id', $request->branch_id)
+                            ->exists();
 
-                        if ($variant->stock < $item->qty) {
-                            throw new \Exception(
-                                'Stok tidak cukup untuk ' .
-                                    $variant->product->name
-                            );
+                        if (!$exists) {
+                            $invalidProducts[] = $item->variant->product->name;
                         }
-
-                        $totalPrice +=
-                            $variant->price * $item->qty;
                     }
+
+                    if (!empty($invalidProducts)) {
+
+                        throw new \Exception(
+                            'Produk berikut tidak tersedia di cabang yang dipilih: '
+                                . implode(', ', $invalidProducts)
+                        );
+                    }
+
+                    /*
+    |--------------------------------------------------------------------------
+    | CREATE ORDER
+    |--------------------------------------------------------------------------
+    */
 
                     $order = OrderModel::create([
 
                         'user_id' => $user->id,
 
-                        // ✅ ambil dari form
                         'branch_id' => $request->branch_id,
 
                         'payment_method_id' => $payment->id,
 
-                        'total_price' => $totalPrice,
+                        'total_price' => 0,
 
                         'bank_name' => $payment->bank_name,
                         'bank_account_number' => $payment->account_number,
@@ -263,7 +324,23 @@ class CheckoutController extends Controller
 
                         $variant = ProductVariantModel::lockForUpdate()
                             ->with('product')
-                            ->findOrFail($item->variant_id);
+                            ->where('branch_id', $request->branch_id)
+                            ->find($item->variant_id);
+
+                        if (!$variant) {
+                            continue;
+                        }
+
+                        if ($variant->stock < $item->qty) {
+
+                            throw new \Exception(
+                                'Stok tidak cukup untuk ' . $variant->product->name
+                            );
+                        }
+
+                        $subtotal = $variant->price * $item->qty;
+
+                        $totalPrice += $subtotal;
 
                         OrderItemModel::create([
 
@@ -275,29 +352,24 @@ class CheckoutController extends Controller
 
                             'price' => $variant->price,
 
-                            'subtotal' =>
-                            $variant->price * $item->qty,
+                            'subtotal' => $subtotal,
 
-                            'product_name' =>
-                            $variant->product->name,
+                            'product_name' => $variant->product->name,
 
-                            'variant_sku' =>
-                            $variant->sku,
+                            'variant_sku' => $variant->sku,
 
-                            'variant_color' =>
-                            $variant->color,
+                            'variant_color' => $variant->color,
 
-                            'variant_size' =>
-                            $variant->size,
+                            'variant_size' => $variant->size,
                         ]);
 
-                        $variant->decrement(
-                            'stock',
-                            $item->qty
-                        );
+                        $variant->decrement('stock', $item->qty);
                     }
 
-                    // clear cart
+                    $order->update([
+                        'total_price' => $totalPrice
+                    ]);
+
                     $cart->items()->delete();
                 }
             });

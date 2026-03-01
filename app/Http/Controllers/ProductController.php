@@ -59,17 +59,24 @@ class ProductController extends Controller
         $baseQuery = ProductModel::query()
             ->where('is_active', true)
 
-            // 🔥 hanya produk yg punya variant dengan stock > 0
+            // hanya produk yg punya variant dengan stock > 0
             ->whereHas('variants', function ($q) {
                 $q->where('stock', '>', 0);
             })
 
-            // 🔥 ambil lowest price hanya dari variant yg stock > 0
+            // ambil lowest price dari variant yg stock > 0
             ->withMin(['variants' => function ($q) {
                 $q->where('stock', '>', 0);
             }], 'price')
 
-            ->with(['variants', 'category'])
+            // ✅ load branch lewat variants
+            ->with([
+                'category',
+                'variants' => function ($q) {
+                    $q->where('stock', '>', 0)
+                        ->with('branch');
+                }
+            ])
 
             ->when($request->search, function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
@@ -102,25 +109,22 @@ class ProductController extends Controller
         $product = ProductModel::query()
             ->where('is_active', true)
 
-            // Pastikan kategori cocok
             ->whereHas('category', function ($q) use ($categorySlug) {
                 $q->where('slug', $categorySlug);
             })
 
-            // 🔥 WAJIB punya variant dengan stock > 0
             ->whereHas('variants', function ($q) {
                 $q->where('stock', '>', 0);
             })
 
-            // Load hanya variant yg stock > 0
             ->with([
                 'category',
                 'variants' => function ($q) {
-                    $q->where('stock', '>', 0);
+                    $q->where('stock', '>', 0)
+                        ->with('branch'); // 🔥 ini penting
                 }
             ])
 
-            // Ambil lowest price dari yg stock > 0
             ->withMin(['variants' => function ($q) {
                 $q->where('stock', '>', 0);
             }], 'price')

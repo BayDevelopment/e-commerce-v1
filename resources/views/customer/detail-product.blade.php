@@ -67,6 +67,23 @@
                             </div>
                         </div>
 
+                        {{-- Branch Availability --}}
+                        @if ($product->variants->count())
+                            <div class="mb-4">
+                                <div class="td-variant-label mb-2">Tersedia di Cabang</div>
+
+                                <div class="td-branch-list">
+                                    @foreach ($product->variants->unique('branch_id') as $variant)
+                                        @if ($variant->branch)
+                                            <div class="td-branch-item">
+                                                📍 {{ $variant->branch->name }}
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
                         {{-- Variants --}}
                         @if ($product->variants->count())
                             <div class="mb-4">
@@ -275,6 +292,31 @@
     <style>
         #mainProductImg {
             transition: opacity .2s ease;
+        }
+
+        .td-branch-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .td-branch-item {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            padding: 6px 12px;
+            border-radius: 8px;
+
+            color: #fff !important;
+            font-size: 13px;
+            font-weight: 500;
+
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .td-branch-item * {
+            color: #fff !important;
         }
     </style>
 @endsection

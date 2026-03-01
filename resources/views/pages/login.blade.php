@@ -45,7 +45,8 @@
 
                         <!-- REMEMBER -->
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <a href="#" class="small text-decoration-none" style="color:#d9c7ff;">
+                            <a href="{{ route('password.request') }}" class="small text-decoration-none"
+                                style="color:#d9c7ff;">
                                 Lupa password?
                             </a>
                         </div>

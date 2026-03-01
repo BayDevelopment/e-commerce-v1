@@ -90,4 +90,13 @@ class ProductModel extends Model
 
         return null;
     }
+    public function branches()
+    {
+        return $this->belongsToMany(
+            BranchModel::class,
+            'product_branch',
+            'product_id',
+            'branch_id'
+        );
+    }
 }

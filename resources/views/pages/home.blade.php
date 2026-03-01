@@ -34,11 +34,19 @@
                         </a>
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-4">
-                        <span class="td-chip">SEO-friendly</span>
-                        <span class="td-chip">Mobile-first</span>
-                        <span class="td-chip">Admin-ready</span>
-                        <span class="td-chip">Fast UI</span>
+                    <div class="td-chip-slider mt-4">
+                        <div class="td-chip-track">
+                            <span class="td-chip">SEO-friendly</span>
+                            <span class="td-chip">Mobile-first</span>
+                            <span class="td-chip">Admin-ready</span>
+                            <span class="td-chip">Fast UI</span>
+
+                            <!-- duplicate untuk loop seamless -->
+                            <span class="td-chip">SEO-friendly</span>
+                            <span class="td-chip">Mobile-first</span>
+                            <span class="td-chip">Admin-ready</span>
+                            <span class="td-chip">Fast UI</span>
+                        </div>
                     </div>
 
                 </div>

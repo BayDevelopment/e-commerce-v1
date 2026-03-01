@@ -21,6 +21,16 @@ class LaporanController extends Controller
         if ($request->end_date) {
             $query->whereDate('created_at', '<=', $request->end_date);
         }
+        // search bebas (optional)
+        if ($request->search) {
+            $query->where('invoice', 'like', '%' . $request->search . '%')
+                ->orWhere('customer_name', 'like', '%' . $request->search . '%');
+        }
+
+        // filter status done
+        if ($request->status == 'done') {
+            $query->where('status', 'done');
+        }
 
         $orders = $query->latest()->get();
 
@@ -44,15 +54,50 @@ class LaporanController extends Controller
         ]);
     }
 
-    public function export()
+    public function exportPdf(Request $request)
     {
-        $orders = OrderModel::where('user_id', Auth::id())
-            ->latest()
-            ->get();
+        $query = OrderModel::with(['paymentMethod', 'branch'])
+            ->where('user_id', Auth::id());
 
-        $pdf = Pdf::loadView('customer.laporan-pdf', compact('orders'))
-            ->setPaper('a4', 'portrait');
+        // FILTER STATUS
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-        return $pdf->download('laporan-belanja-saya.pdf');
+        // FILTER DATE FROM
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        // FILTER DATE TO
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // SEARCH
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+
+                $q->where('invoice_number', 'like', "%{$request->search}%")
+                    ->orWhereHas('branch', function ($branch) use ($request) {
+                        $branch->where('name', 'like', "%{$request->search}%");
+                    });
+            });
+        }
+
+        $orders = $query->latest()->get();
+
+        $totalOrders = $orders->count();
+        $totalAmount = $orders->sum('total_price');
+
+        $pdf = Pdf::loadView('customer.laporan-pdf', [
+            'orders' => $orders,
+            'totalOrders' => $totalOrders,
+            'totalAmount' => $totalAmount,
+            'filters' => $request->all(),
+            'exportedAt' => now()
+        ])->setPaper('A4', 'portrait');
+
+        return $pdf->download('Laporan-Pesanan-Trendora.pdf');
     }
 }

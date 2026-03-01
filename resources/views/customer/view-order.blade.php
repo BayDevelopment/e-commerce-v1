@@ -70,14 +70,18 @@
 
                             <div class="d-flex flex-wrap gap-2 mt-3">
 
-                                <span class="badge-modern {{ $statusColor }}">
+                                <span id="order-status-badge" class="badge-modern {{ $statusColor }}">
                                     <i class="fa-solid fa-box"></i>
-                                    {{ $statusText }}
+                                    <span id="order-status-text">
+                                        {{ $statusText }}
+                                    </span>
                                 </span>
 
-                                <span class="badge-modern {{ $paymentColor }}">
+                                <span id="payment-status-badge" class="badge-modern {{ $paymentColor }}">
                                     <i class="fa-solid fa-credit-card"></i>
-                                    {{ $paymentText }}
+                                    <span id="payment-status-text">
+                                        {{ $paymentText }}
+                                    </span>
                                 </span>
 
                             </div>
@@ -177,7 +181,7 @@
                     </div>
 
                     <div class="warning-note mt-3">
-                        * Pastikan nominal transfer sesuai total pesanan.
+                        * Pastikan nominal transfer sesuai total pesanan - ( Jpg,Png - 1MB ).
                     </div>
 
                     {{-- UPLOAD --}}
@@ -1147,6 +1151,121 @@
                     }
                 });
             });
+
+        });
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const REFRESH_INTERVAL = 5000; // 5 detik
+
+            // =========================
+            // mapping warna status
+            // =========================
+            function getStatusClass(status) {
+                switch (status) {
+                    case "pending":
+                        return "badge-pending";
+                    case "process":
+                        return "badge-process";
+                    case "done":
+                        return "badge-done";
+                    case "cancel":
+                        return "badge-cancel";
+                    default:
+                        return "badge-default";
+                }
+            }
+
+            // =========================
+            // mapping text status
+            // =========================
+            function getStatusText(status) {
+                switch (status) {
+                    case "pending":
+                        return "Menunggu";
+                    case "process":
+                        return "Diproses";
+                    case "done":
+                        return "Selesai";
+                    case "cancel":
+                        return "Dibatalkan";
+                    default:
+                        return status;
+                }
+            }
+
+            // =========================
+            // update badge safely
+            // =========================
+            function updateBadge(badgeId, textId, status) {
+                const badge = document.getElementById(badgeId);
+                const text = document.getElementById(textId);
+
+                if (!badge || !text) return;
+
+                // hapus class status lama saja
+                badge.classList.remove(
+                    "badge-pending",
+                    "badge-process",
+                    "badge-done",
+                    "badge-cancel",
+                    "badge-default"
+                );
+
+                // tambah class baru
+                badge.classList.add(getStatusClass(status));
+
+                // update text
+                text.innerText = getStatusText(status);
+            }
+
+            // =========================
+            // ambil order id dari attribute
+            // =========================
+            const orderContainer = document.getElementById("order-container");
+
+            if (!orderContainer) return;
+
+            const orderId = orderContainer.dataset.orderId;
+
+            if (!orderId) return;
+
+            // =========================
+            // fetch status dari server
+            // =========================
+            async function fetchStatus() {
+                try {
+                    const response = await fetch(`/customer/orders/${orderId}`);
+
+                    if (!response.ok) return;
+
+                    const data = await response.json();
+
+                    updateBadge(
+                        "order-status-badge",
+                        "order-status-text",
+                        data.status
+                    );
+
+                    updateBadge(
+                        "payment-status-badge",
+                        "payment-status-text",
+                        data.payment_status
+                    );
+                } catch (error) {
+                    console.warn("Status update failed:", error);
+                }
+            }
+
+            // =========================
+            // jalankan pertama kali
+            // =========================
+            fetchStatus();
+
+            // =========================
+            // auto refresh interval
+            // =========================
+            setInterval(fetchStatus, REFRESH_INTERVAL);
 
         });
     </script>

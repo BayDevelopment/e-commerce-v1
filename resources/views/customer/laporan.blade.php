@@ -12,34 +12,77 @@
                         Pantau riwayat transaksi dan total pengeluaran Anda
                     </p>
                 </div>
-
-                <a href="{{ route('customer.laporan.export') }}" class="btn-export">
-                    <i class="fa-solid fa-file-arrow-down"></i>
-                    Export PDF
-                </a>
             </div>
 
             {{-- ================= FILTER ================= --}}
             <div class="glass-card filter-card mb-4">
-                <form method="GET" class="row g-3 align-items-end">
-                    <div class="col-md-4">
+                <form method="GET" action="{{ route('customer.laporan') }}" class="row g-3 align-items-end">
+
+                    {{-- DATE FROM --}}
+                    <div class="col-md-3">
                         <label class="filter-label">Dari</label>
-                        <input type="date" name="start_date" class="form-control modern-input"
-                            value="{{ request('start_date') }}">
+                        <input type="date" name="date_from" class="form-control modern-input"
+                            value="{{ request('date_from') }}">
                     </div>
 
-                    <div class="col-md-4">
+                    {{-- DATE TO --}}
+                    <div class="col-md-3">
                         <label class="filter-label">Sampai</label>
-                        <input type="date" name="end_date" class="form-control modern-input"
-                            value="{{ request('end_date') }}">
+                        <input type="date" name="date_to" class="form-control modern-input"
+                            value="{{ request('date_to') }}">
                     </div>
 
-                    <div class="col-md-4">
+                    {{-- SEARCH --}}
+                    <div class="col-md-3">
+                        <label class="filter-label">Search</label>
+                        <input type="text" name="search" class="form-control modern-input"
+                            placeholder="Invoice / Cabang..." value="{{ request('search') }}">
+                    </div>
+
+                    {{-- STATUS --}}
+                    <div class="col-md-3">
+                        <label class="filter-label">Status</label>
+                        <select name="status" class="form-select modern-input">
+
+                            <option value="">Semua</option>
+
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>
+                                Pending
+                            </option>
+
+                            <option value="process" {{ request('status') == 'process' ? 'selected' : '' }}>
+                                Process
+                            </option>
+
+                            <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>
+                                Done
+                            </option>
+
+                            <option value="cancel" {{ request('status') == 'cancel' ? 'selected' : '' }}>
+                                Cancel
+                            </option>
+
+                        </select>
+                    </div>
+
+                    {{-- BUTTON FILTER --}}
+                    <div class="col-md-6">
                         <button type="submit" class="btn-filter w-100">
                             <i class="fa-solid fa-magnifying-glass"></i>
                             Terapkan Filter
                         </button>
                     </div>
+
+                    {{-- EXPORT PDF (ikut filter aktif) --}}
+                    <div class="col-md-6">
+                        <a href="{{ route('customer.laporan.export', request()->query()) }}"
+                            class="btn-export w-100 text-center d-block">
+
+                            <i class="fa-solid fa-file-pdf"></i>
+                            Export PDF
+                        </a>
+                    </div>
+
                 </form>
             </div>
 

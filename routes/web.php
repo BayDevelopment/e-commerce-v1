@@ -5,11 +5,13 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResetPasswordController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,10 +55,26 @@ Route::prefix('cart')
 Route::middleware('guest')->prefix('auth')->group(function () {
 
     Route::get('/login', [AuthController::class, 'index'])->name('login');
-    Route::post('/login', [AuthController::class, 'loginProses'])->name('login.proses');
+    Route::post('/login', [AuthController::class, 'loginProses'])
+        ->middleware('throttle:5,1'); // max 5 percobaan per 1 menit
 
     Route::get('/register', [AuthController::class, 'register'])->name('register');
-    Route::post('/register', [AuthController::class, 'registerProses'])->name('register.proses');
+    Route::post('/register', [AuthController::class, 'RegisterProses'])
+        ->middleware('throttle:3,5');
+
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->middleware('throttle:3,1')
+        ->name('password.email');
+
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
+
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
+        ->middleware('throttle:3,1')
+        ->name('password.update');
 });
 
 Route::post('/auth/logout', [AuthController::class, 'logoutProses'])
@@ -131,6 +149,9 @@ Route::middleware(['auth', 'customer'])
         Route::get('/orders/{order}', [OrderController::class, 'show'])
             ->name('orders.show');
 
+        Route::get('/orders/status/all', [OrderController::class, 'statusAll'])
+            ->name('orders.status.all');
+
         Route::post(
             '/orders/{order}/upload-proof',
             [OrderController::class, 'uploadProof']
@@ -139,7 +160,7 @@ Route::middleware(['auth', 'customer'])
         Route::get('/laporan-saya', [LaporanController::class, 'index'])
             ->name('customer.laporan');
 
-        Route::get('/laporan-saya/export', [LaporanController::class, 'export'])
+        Route::get('/laporan/export', [LaporanController::class, 'exportPdf'])
             ->name('laporan.export');
         /*
         |--------------------------------------------------------------------------

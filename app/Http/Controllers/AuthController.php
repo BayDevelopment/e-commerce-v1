@@ -6,45 +6,77 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     public function index()
     {
-        $data = [
+        return view('pages.login', [
             'title' => 'Login | Fashion & Lifestyle',
-        ];
-        return view('pages.login', $data);
+        ]);
     }
+
     public function loginProses(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => 'required|email|max:100',
+            'password' => 'required|max:100',
         ]);
 
-        // 🔥 AMBIL SESSION GUEST SEBELUM LOGIN
-        $oldSessionId = $request->session()->getId();
+        $email = Str::lower($request->email);
+        $ip = $request->ip();
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        // key unik untuk rate limit
+        $key = "login:{$email}|{$ip}";
+
+        // 🔥 cek terlalu banyak percobaan
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+
+            $seconds = RateLimiter::availableIn($key);
+
             return back()->withErrors([
-                'email' => 'Email atau password salah.',
+                'email' => "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik."
             ])->withInput();
         }
 
+        // ambil session guest sebelum login
+        $oldSessionId = $request->session()->getId();
+
+        // cek login
+        if (!Auth::attempt($request->only('email', 'password'))) {
+
+            // tambah hit rate limiter
+            RateLimiter::hit($key, 60);
+
+            // delay anti brute force
+            sleep(1);
+
+            return back()->withErrors([
+                'email' => 'Email atau password salah.'
+            ])->withInput();
+        }
+
+        // clear limiter jika sukses
+        RateLimiter::clear($key);
+
         $user = Auth::user();
 
+        // cek email verified
         if (is_null($user->email_verified_at)) {
+
             Auth::logout();
+
             return redirect()->route('login')->withErrors([
-                'email' => 'Akun belum diverifikasi.',
+                'email' => 'Akun belum diverifikasi.'
             ]);
         }
 
-        // Regenerate session setelah login sukses
+        // regenerate session (ANTI SESSION HIJACK)
         $request->session()->regenerate();
 
-        // 🔄 Merge cart pakai session guest yang benar
+        // merge cart guest
         $this->mergeCartAfterLogin($oldSessionId);
 
         return redirect()->route('customer.dashboard')
@@ -57,9 +89,7 @@ class AuthController extends Controller
             ->where('session_id', $oldSessionId)
             ->first();
 
-        if (!$guestCart) {
-            return;
-        }
+        if (!$guestCart) return;
 
         $userId = Auth::id();
 
@@ -76,9 +106,11 @@ class AuthController extends Controller
                     ->first();
 
                 if ($existing) {
+
                     $existing->quantity += $item->quantity;
                     $existing->save();
                 } else {
+
                     $item->update([
                         'cart_id' => $userCart->id
                     ]);
@@ -98,43 +130,67 @@ class AuthController extends Controller
     // REGISTER
     public function register()
     {
-        $data = [
+        return view('pages.register', [
             'title' => 'Register | Fashion & Lifestyle',
-        ];
-        return view('pages.register', $data);
+        ]);
     }
+
     public function RegisterProses(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
+            'email' => 'required|email|max:100|unique:users,email',
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'max:100',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/'
+            ],
         ]);
+
+        $ip = $request->ip();
+
+        $key = "register:{$ip}";
+
+        // limit register
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+
+            $seconds = RateLimiter::availableIn($key);
+
+            return back()->withErrors([
+                'email' => "Terlalu banyak pendaftaran. Coba lagi dalam {$seconds} detik."
+            ])->withInput();
+        }
+
+        RateLimiter::hit($key, 300);
+
+        // delay anti bot
+        sleep(1);
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'customer', // 🔥 tambahin ini
+            'name' => strip_tags($request->name),
+            'email' => Str::lower($request->email),
+            'password' => Hash::make($request->password),
+            'role' => 'customer',
         ]);
 
-        // kirim email verifikasi
+        // kirim email verification
         $user->sendEmailVerificationNotification();
 
         return redirect()->route('login')
             ->with('success', 'Link verifikasi telah dikirim ke email Anda.');
     }
 
-
     // LOGOUT
     public function logoutProses(Request $request)
     {
         Auth::logout();
 
-        // invalidate session
         $request->session()->invalidate();
 
-        // regenerate CSRF token
         $request->session()->regenerateToken();
 
         return redirect()->route('login')

@@ -6,60 +6,61 @@
 
             <h3 class="text-white mb-4">Pesanan Saya</h3>
 
-            @forelse ($orders as $order)
-                @php
-                    $statusColor = match ($order->status) {
-                        'pending' => 'badge-pending',
-                        'process' => 'badge-process',
-                        'done' => 'badge-done',
-                        'cancel' => 'badge-cancel',
-                        default => 'badge-default',
-                    };
-                @endphp
+            <div class="order-scroll">
+                @forelse ($orders as $order)
+                    @php
+                        $statusColor = match ($order->status) {
+                            'pending' => 'badge-pending',
+                            'process' => 'badge-process',
+                            'done' => 'badge-done',
+                            'cancel' => 'badge-cancel',
+                            default => 'badge-default',
+                        };
+                    @endphp
 
-                <div class="order-card">
+                    <div class="order-card">
 
-                    <div class="order-left">
-                        <div class="order-id">
-                            Order #{{ $order->id }}
+                        <div class="order-left">
+                            <div class="order-id">
+                                Order #{{ $order->id }}
+                            </div>
+
+                            <div class="order-date">
+                                {{ $order->created_at->format('d M Y H:i') }}
+                            </div>
+                            <div class="order-branch">
+                                <i class="fa-solid fa-store branch-icon"></i>
+                                <span>{{ $order->branch->name ?? 'Tidak tersedia' }}</span>
+                            </div>
+
+                            <span id="order-status-{{ $order->id }}" class="order-badge {{ $statusColor }}">
+                                {{ ucfirst($order->status) }}
+                            </span>
                         </div>
 
-                        <div class="order-date">
-                            {{ $order->created_at->format('d M Y H:i') }}
-                        </div>
-                        <div class="order-branch">
-                            <i class="fa-solid fa-store branch-icon"></i>
-                            <span>{{ $order->branch->name ?? 'Tidak tersedia' }}</span>
+                        <div class="order-right">
+                            <div class="order-price">
+                                Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                            </div>
+
+
+                            <a href="{{ route('customer.orders.show', $order->id) }}"
+                                class="btn-modern d-inline-flex align-items-center gap-2 text-decoration-none">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Lihat Detail</span>
+                            </a>
                         </div>
 
-                        <span class="order-badge {{ $statusColor }}">
-                            {{ ucfirst($order->status) }}
-                        </span>
                     </div>
 
-                    <div class="order-right">
-                        <div class="order-price">
-                            Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                        </div>
-
-
-                        <a href="{{ route('customer.orders.show', $order->id) }}"
-                            class="btn-modern d-inline-flex align-items-center gap-2 text-decoration-none">
-                            <i class="fa-solid fa-eye"></i>
-                            <span>Lihat Detail</span>
-                        </a>
+                @empty
+                    <div class="empty-state">
+                        <i class="fa-solid fa-box-open"></i>
+                        <h5>Belum ada pesanan</h5>
+                        <p>Yuk mulai belanja sekarang 🔥</p>
                     </div>
-
-                </div>
-
-            @empty
-                <div class="empty-state">
-                    <i class="fa-solid fa-box-open"></i>
-                    <h5>Belum ada pesanan</h5>
-                    <p>Yuk mulai belanja sekarang 🔥</p>
-                </div>
-            @endforelse
-
+                @endforelse
+            </div>
             <div class="mt-3">
                 {{ $orders->links() }}
             </div>
@@ -69,6 +70,31 @@
 @endsection
 @section('styles')
     <style>
+        /* scroll */
+        .order-scroll {
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        /* scrollbar modern */
+        .order-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .order-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .order-scroll::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        .order-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.7);
+        }
+
         /* ================= PAGE BACKGROUND ================= */
         .td-page {
             background:
@@ -434,4 +460,80 @@
             color: #a78bfa;
         }
     </style>
+@endsection
+@section('scripts')
+    <script>
+        function getStatusClass(status) {
+            switch (status) {
+                case 'pending':
+                    return 'badge-pending';
+                case 'process':
+                    return 'badge-process';
+                case 'done':
+                    return 'badge-done';
+                case 'cancel':
+                    return 'badge-cancel';
+                default:
+                    return 'badge-default';
+            }
+        }
+
+        let isFetching = false;
+
+        async function updateOrderStatus() {
+            if (isFetching) return;
+
+            isFetching = true;
+
+            try {
+                const response = await fetch(
+                    "{{ route('customer.orders.status.all') }}", {
+                        headers: {
+                            "Accept": "application/json",
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+                if (!response.ok) return;
+
+                const orders = await response.json();
+
+                orders.forEach(order => {
+                    const badge =
+                        document.getElementById(
+                            "order-status-" + order.id
+                        );
+
+                    if (!badge) return;
+
+                    const newClass =
+                        "order-badge " +
+                        getStatusClass(order.status);
+
+                    const newText =
+                        order.status.charAt(0).toUpperCase() +
+                        order.status.slice(1);
+
+                    if (badge.className !== newClass) {
+                        badge.className = newClass;
+                    }
+
+                    if (badge.innerText !== newText) {
+                        badge.innerText = newText;
+                    }
+                });
+            } catch (e) {
+                console.warn("Gagal update status", e);
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        // jalan pertama kali
+        updateOrderStatus();
+
+        // update setiap 5 detik
+        setInterval(updateOrderStatus, 5000);
+    </script>
 @endsection

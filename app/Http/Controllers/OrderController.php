@@ -19,22 +19,32 @@ class OrderController extends Controller
     {
         $allowedStatuses = ['pending', 'process', 'done', 'cancel'];
 
-        $query = OrderModel::with(['paymentMethod', 'branch']) // tambah branch kalau ada relasi
+        $query = OrderModel::with(['paymentMethod', 'branch'])
             ->where('user_id', Auth::id());
 
         // Filter status hanya jika valid
         if ($request->filled('status')) {
+
             $query->when(
                 in_array($request->status, $allowedStatuses),
                 fn($q) => $q->where('status', $request->status)
             )->when(
                 !in_array($request->status, $allowedStatuses),
-                fn($q) => $q->whereRaw('1 = 0') // kosongkan kalau status invalid
+                fn($q) => $q->whereRaw('1 = 0')
             );
         }
 
         $orders = $query->latest()->paginate(10)->withQueryString();
 
+        // ✅ TAMBAHKAN INI
+        if ($request->ajax()) {
+
+            return response()->json([
+                'orders' => $orders->items()
+            ]);
+        }
+
+        // return normal view
         return view('customer.order', compact('orders'))
             ->with([
                 'title'   => 'Pesanan Saya | Trendora',
@@ -47,16 +57,28 @@ class OrderController extends Controller
     | ORDER DETAIL
     |--------------------------------------------------------------------------
     */
-    public function show(OrderModel $order)
+    public function show(Request $request, OrderModel $order)
     {
         $this->authorizeOrder($order);
 
         $order->load([
-            'items.variant.product',     // load detail item + variant + produk
+            'items.variant.product',
             'paymentMethod',
-            'branch',                    // kalau sudah ada relasi branch
+            'branch',
         ]);
 
+        // ✅ TAMBAHKAN INI (untuk realtime tanpa reload)
+        if ($request->ajax()) {
+
+            return response()->json([
+                'id' => $order->id,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'updated_at' => $order->updated_at->format('Y-m-d H:i:s'),
+            ]);
+        }
+
+        // return view normal
         return view('customer.view-order', [
             'title'   => 'Detail Pesanan #' . $order->id,
             'navlink' => 'Detail Pesanan',
@@ -109,5 +131,15 @@ class OrderController extends Controller
         if ($order->user_id !== Auth::id()) {
             abort(403, 'Akses ditolak. Ini bukan pesanan Anda.');
         }
+    }
+
+    // reload order
+    public function statusAll()
+    {
+        $orders = OrderModel::where('user_id', auth()->Auth::id())
+            ->select('id', 'status')
+            ->get();
+
+        return response()->json($orders);
     }
 }
